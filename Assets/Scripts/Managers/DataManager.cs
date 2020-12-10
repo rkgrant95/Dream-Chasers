@@ -1,0 +1,54 @@
+﻿//This script handles the game management. Game managers are often completely different and generally provide whatever
+//specific and varied services an individual game may need. In this project, in an effort to make the code simple to understand
+//and modular, the game manager is tied into several core functions of the player, enemies, and allies. Namely, this manager
+//keeps track of the player and the players state, handles all scoring, interfaces with the UI, summons the allies, and 
+//reloads the scene when the player is defeated
+
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
+using SaveSystem;
+using System.IO;
+
+public class DataManager : MonoBehaviour
+{
+	public static DataManager Instance;             //This script, like MouseLocation, has a public static reference to itself to that other scripts
+													//can access it from anywhere without needing to find a reference to it
+
+    public ScoreDataContainer scoreDataContainer = new ScoreDataContainer();
+	public KillDataContainer killDataContainer = new KillDataContainer();
+
+	public WeaponDataContainer weaponDataContainer = new WeaponDataContainer();
+
+	//Creates a new FileSave object with the file format XML.
+	void Awake()
+	{
+		//This is a common approach to handling a class with a reference to itself.
+		//If instance variable doesn't exist, assign this object to it
+		if (Instance == null)
+			Instance = this;
+		//Otherwise, if the instance variable does exist, but it isn't this object, destroy this object.
+		//This is useful so that we cannot have more than one GameManager object in a scene at a time.
+		else if (Instance != this)
+			Destroy(this);
+
+	}
+
+	private void OnDisable()
+	{
+		scoreDataContainer.Save();
+		killDataContainer.Save();
+		//weaponDataContainer.Save();
+
+	}
+
+	void OnEnable()
+	{
+		scoreDataContainer = ScoreDataContainer.Load();
+		killDataContainer = KillDataContainer.Load();
+		//weaponDataContainer = WeaponDataContainer.Load();
+	}
+}
+
