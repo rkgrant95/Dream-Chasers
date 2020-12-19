@@ -17,7 +17,6 @@ public class PlayerAttack : MonoBehaviour
 	[Header("UI")]
 	[SerializeField] Countdown countDown;				//A reference to the countdown slider
 
-	[SerializeField]
 	int attackIndex = 0;								//The idnex of the attack the player is currently using
 	float attackCooldown = 0f;							//How long the player must wait before attacking again
 	float timeOfLastAttack = 0f;						//The time when the player last attacked

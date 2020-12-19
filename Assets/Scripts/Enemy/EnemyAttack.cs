@@ -16,10 +16,7 @@ public class EnemyAttack : MonoBehaviour
 
 	bool canAttack;											//Can this enemy attack?
 	bool playerInRange;										//Is the player in range?
-	WaitForSeconds attackDelay;                             //Variable to hold the attack delay
-
-	// Reference to attack player coroutine
-	IEnumerator attackPlayer;
+	WaitForSeconds attackDelay;								//Variable to hold the attack delay
 
 	//Reset() defines the default values for properties in the inspector
 	void Reset()
@@ -32,7 +29,6 @@ public class EnemyAttack : MonoBehaviour
 	{
 		//Initialize our attackDelay variable here (it can be more efficient than doing it in the coroutine)
 		attackDelay = new WaitForSeconds(timeBetweenAttacks);
-		attackPlayer = AttackPlayer();
 	}
 
 	//When this game object is enabled...
@@ -43,7 +39,7 @@ public class EnemyAttack : MonoBehaviour
 		SlimeDebuff = null;
 		canAttack = true;
 		//Start the AttackPlayer coroutine
-		StartCoroutine(attackPlayer);
+		StartCoroutine("AttackPlayer");
 	}
 
 	//When the player enters the trigger collider this is called. In reality, it could be

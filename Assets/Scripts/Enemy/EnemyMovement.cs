@@ -9,87 +9,22 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
 	//We want this to be public, but not in the inspector, so we use [HideInInspector]
-	[HideInInspector] public FrostDebuff FrostDebuff;               //Reference to a frost debuff that may be attached to the enemy
+	[HideInInspector] public FrostDebuff FrostDebuff;				//Reference to a frost debuff that may be attached to the enemy
 
 	[Header("Components")]
-	[SerializeField] UnityEngine.AI.NavMeshAgent navMeshAgent;                  //Reference to the navmesh agent component
-	[SerializeField] Rigidbody rigidBody;                                       //Reference to the rigidbody component
+	[SerializeField] UnityEngine.AI.NavMeshAgent navMeshAgent; 					//Reference to the navmesh agent component
+	[SerializeField] Animator animator;								//Reference to the animator component
 
-	[SerializeField] Animator animator;                             //Reference to the animator component
 	[Header("Stink Hit Properties")]
-	[SerializeField] float runAwayDistance = 10f;                   //How far the enemy runs when hit by a stink attack
+	[SerializeField] float runAwayDistance = 10f;					//How far the enemy runs when hit by a stink attack
 
-	float originalSpeed;                                            //Original movement speed of the enemy (in case they get frozen)
-	bool isRunningAway;                                             //Is the enemy running away?
-	Vector3 runAwayPosition;                                        //Where the enemy runs if they are hit with a stink attack
+	float originalSpeed;											//Original movement speed of the enemy (in case they get frozen)
+	bool isRunningAway;												//Is the enemy running away?
+	Vector3 runAwayPosition;										//Where the enemy runs if they are hit with a stink attack
 
-	public IEnumerator hitReaction;
-	public IEnumerator chasePlayer;
-	EnemyHealth myHealth;
-	static WaitForSeconds updateDelay = new WaitForSeconds(.5f);    //The delay between updating the navmesh agent (for efficiency). Since
+	static WaitForSeconds updateDelay = new WaitForSeconds(.5f);	//The delay between updating the navmesh agent (for efficiency). Since
 																	//all enemies have the same delay, this is declared as 'static' so all
 																	//enemies share the same one (saves on memory)
-
-	public enum EnemyType {ZomBunny, ZomBear, ZomClown, ZomDuck, Hellephant }
-	public EnemyType enemyType;
-
-	KillData killData = new KillData();
-
-
-	void TesterFunctionLogPoints()
-	{
-		Debug.Log(DataManager.Instance.killDataContainer.killDataList.Count);
-
-		switch (enemyType)
-		{
-			case EnemyType.ZomBunny:
-				killData = new KillData(DataManager.Instance.killDataContainer.killDataList[0]);
-					killData.enemyName = Statics.zomBunnyName;
-					killData.currentValue += 1;
-					killData.expValue = 10;
-					killData.totalValue += 10;
-					DataManager.Instance.killDataContainer.killDataList[0] = new KillData(killData);
-				break;
-			case EnemyType.ZomBear:
-				killData = new KillData(DataManager.Instance.killDataContainer.killDataList[1]);
-				killData.enemyName = Statics.zomBearName;
-					killData.currentValue += 1;
-					killData.expValue = 10;
-					killData.totalValue += 10;
-					DataManager.Instance.killDataContainer.killDataList[1] = new KillData(killData);
-				
-				break;
-			case EnemyType.ZomClown:
-				killData = new KillData(DataManager.Instance.killDataContainer.killDataList[2]);
-				killData.enemyName = Statics.zomClownName;
-					killData.currentValue += 1;
-					killData.expValue = 10;
-					killData.totalValue += 10;
-					DataManager.Instance.killDataContainer.killDataList[2] = new KillData(killData);
-
-				break;
-			case EnemyType.ZomDuck:
-				killData = new KillData(DataManager.Instance.killDataContainer.killDataList[3]);
-
-				killData.enemyName = Statics.zomDuckName;
-					killData.currentValue += 1;
-					killData.expValue = 10;
-					killData.totalValue += 10;
-					DataManager.Instance.killDataContainer.killDataList[3] = new KillData(killData);
-				break;
-			case EnemyType.Hellephant:
-				killData = new KillData(DataManager.Instance.killDataContainer.killDataList[4]);
-
-				killData.enemyName = Statics.hellephantName;
-					killData.currentValue += 1;
-					killData.expValue = 10;
-					killData.totalValue += 10;
-					DataManager.Instance.killDataContainer.killDataList[4] = new KillData(killData);
-				break;
-			default:
-				break;
-		}
-	}
 
 	//Reset() defines the default values for properties in the inspector
 	void Reset ()
@@ -97,15 +32,6 @@ public class EnemyMovement : MonoBehaviour
 		//Grab references to the needed components
 		navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
 		animator = GetComponent<Animator> ();
-		rigidBody = GetComponent<Rigidbody>();
-		myHealth = GetComponent<EnemyHealth>();
-		hitReaction = HitReaction(new Vector3(),0, 0);
-		chasePlayer = ChasePlayer();
-	}
-
-	private void Awake()
-	{
-		Reset();
 	}
 
 	//When this game object is enabled...
@@ -115,11 +41,11 @@ public class EnemyMovement : MonoBehaviour
 		navMeshAgent.enabled = true;
 		isRunningAway = false;
 		//Start the ChasePlayer coroutine
-		StartCoroutine(chasePlayer);
+		StartCoroutine("ChasePlayer");
 	}
 
 	//This coroutine updates the navmesh agent to chase the player
-	public IEnumerator ChasePlayer ()
+	IEnumerator ChasePlayer ()
 	{
 		//Start by waiting a single frame to give the game a chance to initialize.
 		//This is usefull if you start with an enemy in the scene (instead of spawning it)
@@ -146,47 +72,11 @@ public class EnemyMovement : MonoBehaviour
 		}
 	}
 
-	public IEnumerator HitReaction(Vector3 _forceDirection, float _force, float _delay)
-	{
-		// Remove navmesh target 
-		StopCoroutine(chasePlayer);
-
-		// Disable kinematics and navmesh agent
-		navMeshAgent.enabled = false;
-		rigidBody.isKinematic = false;
-		// Add force to the rigidbody to simulate push back 
-		rigidBody.AddForce(_forceDirection * _force, ForceMode.Impulse);
-
-		// Wait for period of time
-		yield return new WaitForSeconds(_delay);
-
-		// Enable kinematics
-		rigidBody.isKinematic = true;
-
-		// If this entity is not dead
-		if (!myHealth.isDefeated)
-		{
-			// Enable navmesh agent
-			navMeshAgent.enabled = true;
-
-			// Reassign the navmesh target
-			StartCoroutine(chasePlayer);
-		}
-	}
-
 	//Called when the enemy is defeated and can no longer move
 	public void Defeated()
 	{
-		TesterFunctionLogPoints();
-
-
-		//Stop coroutines
-		StopCoroutine(chasePlayer);
-		StopCoroutine(hitReaction);
-
 		//Disable the navmesh agent
 		navMeshAgent.enabled = false;
-
 		//If there is a frost debuff attached, remove it
 		if (FrostDebuff != null)
 			FrostDebuff.gameObject.SetActive (false);

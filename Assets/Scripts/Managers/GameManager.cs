@@ -7,8 +7,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System.Collections;
-using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,9 +14,7 @@ public class GameManager : MonoBehaviour
 													//can access it from anywhere without needing to find a reference to it
 
 	[Header("Player and Enemy Properties")]
-	public PlayerHealth Player;                     //A reference to the player's health script which will be considered "the player"
-	public PlayerMovement playerMovement;                   //A reference to the player's movement script which will be considered "the player"
-
+	public PlayerHealth Player;						//A reference to the player's health script which will be considered "the player"
 	public Transform EnemyTarget;					//The object that enemies are chasing. This needs to be separate from the player because the game manager
 													//can make enemies chase something that isn't the player (as is the case with allies)
 
@@ -33,9 +29,9 @@ public class GameManager : MonoBehaviour
 	[SerializeField] Animator cameraAnimator;		//A reference to the animator on the camera (to transition it when the player is chosen)
 
 	[Header("Ally Properties")]
-	[SerializeField] AllyManager allyManager;       //A reference to the attached ally manager script
+	[SerializeField] AllyManager allyManager;		//A reference to the attached ally manager script
 
-	[SerializeField] int score;                //The player's current score
+	int score = 0;									//The player's current score
 
 	void Awake()
 	{
@@ -48,7 +44,6 @@ public class GameManager : MonoBehaviour
 		else if (Instance != this)
 			Destroy(this);
 	}
-
 
 	//Called by the PlayerSelect script when a player has been selected at the beginning of the game
 	public void PlayerChosen(PlayerHealth selected)
@@ -100,8 +95,6 @@ public class GameManager : MonoBehaviour
 		//If the ally manager exists, give it some points for the player to spend on an ally
 		if (allyManager != null)
 			allyManager.AddPoints(points);
-
-		DataManager.Instance.scoreDataContainer.scoreDataList[1].AddScore(points);
 	}
 
 	//Called from the PlayerInput scripts and / or the Ally button OnClick() event

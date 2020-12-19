@@ -2,7 +2,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+
 public class PlayerHealth : MonoBehaviour
 {
 	[Header("Health Properties")]
@@ -24,7 +24,6 @@ public class PlayerHealth : MonoBehaviour
 	[Header("Debugging Properties")]				
 	[SerializeField] bool isInvulnerable = false;		//Is the player invulnerable? Useful for debugging so the player won't take damage
 
-	[SerializeField]
 	int currentHealth;									//The current health of the player
 
 	//Reset() defines the default values for properties in the inspector
@@ -51,17 +50,11 @@ public class PlayerHealth : MonoBehaviour
 			return;
 
 		//If the player is not invulnerable, reduce the current health
-		if (!isInvulnerable)
-		{
+		if(!isInvulnerable)
 			currentHealth -= amount;
 
-			//Begin new hit effect on player movement
-			GameManager.Instance.playerMovement.RunHitEffect();
-		}
-
-
 		//If there is a damage image, tell it to flash
-		if (damageImage != null)
+		if(damageImage != null)
 			damageImage.Flash();
 
 		//If there is a health slider, update its value
@@ -90,7 +83,7 @@ public class PlayerHealth : MonoBehaviour
 		if(audioSource != null)
 			audioSource.Play();
 	}
-	
+
 	public bool IsAlive()
 	{
 		//If the currentHealth is above 0 return true (the player is alive), otherwise return false

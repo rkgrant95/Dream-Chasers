@@ -7,8 +7,6 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-	[SerializeField] public enum EnemyType { ZomBunny, ZomBear, ZomDuck, ZomClown, Hellephant }	//A refernce to the enemy type
-
 	[HideInInspector] public EnemySpawner Spawner;		//A Reference to the spawner that created this enemy
 
 	[Header("Health Properties")]
@@ -29,21 +27,19 @@ public class EnemyHealth : MonoBehaviour
 	[SerializeField] Animator animator;					//Reference to the animator component
 	[SerializeField] AudioSource audioSource;			//Reference to the audio source component
 	[SerializeField] CapsuleCollider capsuleCollider;	//Reference to the capsule collider component
-	[SerializeField] ParticleSystem hitParticles;       //Reference to the particle system on the hit particles game object
-	[SerializeField] ParticleSystem deathParticles;     //Reference to the particle system on the death particles game object
+	[SerializeField] ParticleSystem hitParticles;		//Reference to the particle system on the hit particles game object
 
 	[Header("Debugging Properties")]
 	[SerializeField] bool isInvulnerable;				//Is the enemy immune to all damage?
 
 	int currentHealth;									//Current health amount of enemy
-	bool isSinking;                                     //Is the enemy currently sinking?
-	[HideInInspector] public bool isDefeated;			//Is the enemy currently defeated?
+	bool isSinking;										//Is the enemy currently sinking?
 
 	//Reset() defines the default values for properties in the inspector
 	void Reset ()
 	{
 		//Grab references to all of the needed enemy components
-		enemyAttack = GetComponentInChildren<EnemyAttack>();
+		enemyAttack = GetComponent<EnemyAttack>();
 		enemyMovement = GetComponent<EnemyMovement>();
 
 		animator = GetComponent <Animator> ();
@@ -60,14 +56,10 @@ public class EnemyHealth : MonoBehaviour
 		//turned into a trigger so the enemy can sink through the ground)
 		currentHealth = maxHealth;
 		isSinking = false;
-		isDefeated = false;
 		capsuleCollider.isTrigger = false;
 
-		//Position the enemies on the enemy layer so we can decide what the players attacks can interract with
-		gameObject.layer = Statics.enemyLayer;
-
 		//If there is an audio source, set the clip to the hurt sound
-		if (audioSource != null)
+		if(audioSource != null)
 			audioSource.clip = hurtClip;
 	}
 
@@ -104,12 +96,6 @@ public class EnemyHealth : MonoBehaviour
 	//Called when the enemy health is reduce to 0 or lower
 	void Defeated()
 	{
-		//The enemy has been defeated
-		isDefeated = true;
-
-		// Move the game object to the ignore raycast layer
-		//gameObject.layer = Statics.ignoreRaycastLayer;
-
 		//Capsule collider becomes a trigger to that the enemy can sink into the ground and so that
 		//this collider won't interfere with player attacks
 		capsuleCollider.isTrigger = true;
@@ -120,7 +106,7 @@ public class EnemyHealth : MonoBehaviour
 		animator.SetTrigger("Dead");
 
 		//If there is an audio source, set its clip to the death sound
-		if (audioSource != null)
+		if(audioSource != null)
 			audioSource.clip = deathClip;
 
 		//Tell the attack and movement script that the enemy has been defeated
@@ -129,10 +115,6 @@ public class EnemyHealth : MonoBehaviour
 
 		//Tell the game manager to give the player some points
 		GameManager.Instance.AddScore(scoreValue);
-
-		//Play death particle system
-		deathParticles.Play();
-
 		//Call the TurnOff() method after a period of time
 		Invoke("TurnOff", deathEffectTime);
 	}
@@ -140,10 +122,7 @@ public class EnemyHealth : MonoBehaviour
 	//Called once the enemy's "defeated" effects have finished playing
 	void TurnOff()
 	{
-
-
 		//Disable the game object
-		Debug.Log(gameObject.name + " is being reset for respawn");
 		gameObject.SetActive(false);
 	}
 

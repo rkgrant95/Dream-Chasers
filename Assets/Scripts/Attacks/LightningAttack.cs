@@ -29,7 +29,6 @@ public class LightningAttack : MonoBehaviour
 		{
 			//...move the lightning hit game object to the point of the hit...
 			lightningHit.transform.position = hit.point;
-			Debug.Log(hit.collider.gameObject.name);
 			//...and play the effect...
 			lightningHit.Play();
 			//...then set the end point of the lightning bolt..
