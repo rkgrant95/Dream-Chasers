@@ -2,14 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponDropManager : MonoBehaviour
+public class AirDropManager : MonoBehaviour
 {
-    public WeaponDropManagerUtility wdManager;
+    public AirDropManagerUtility airDropManager;
 
+
+    void Awake()
+    {
+
+    }
     // Start is called before the first frame update
     void Start()
     {
-        
+        airDropManager.Initialize(this.transform);
+        StartCoroutine(airDropManager.SpawnAirDrop());
     }
 
     // Update is called once per frame

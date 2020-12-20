@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
 													//can access it from anywhere without needing to find a reference to it
 
 	[Header("Player and Enemy Properties")]
-	public PlayerHealth Player;						//A reference to the player's health script which will be considered "the player"
+	public PlayerHealth Player;                     //A reference to the player's health script which will be considered "the player"
 	public Transform EnemyTarget;					//The object that enemies are chasing. This needs to be separate from the player because the game manager
 													//can make enemies chase something that isn't the player (as is the case with allies)
 

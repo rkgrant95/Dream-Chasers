@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
+
+	[Header("Utility References")]
+	public WeaponSystem weaponSystem;					//A reference to the players weapon system
 	[Header("Health Properties")]
 	[SerializeField] int maxHealth = 100;				//Player's maximum health
 	[SerializeField] AudioClip deathClip = null;		//Sound clip for the player's death
