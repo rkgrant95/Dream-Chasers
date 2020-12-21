@@ -22,6 +22,14 @@ public class PlayerMovement : MonoBehaviour
 		rigidBody = GetComponent <Rigidbody> ();
 	}
 
+	private void OnTriggerEnter(Collider _other)
+    {
+        if (_other.GetComponent<AirDrop>())
+        {
+			_other.GetComponent<AirDrop>().airDrop.AirDropCollected(_other.GetComponent<AirDrop>());
+		}
+    }
+
 	//Move with physics so the movement code goes in FixedUpdate()
 	void FixedUpdate ()
 	{

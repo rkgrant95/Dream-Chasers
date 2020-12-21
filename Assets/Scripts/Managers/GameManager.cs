@@ -15,8 +15,11 @@ public class GameManager : MonoBehaviour
 
 	[Header("Player and Enemy Properties")]
 	public PlayerHealth Player;                     //A reference to the player's health script which will be considered "the player"
-	public Transform EnemyTarget;					//The object that enemies are chasing. This needs to be separate from the player because the game manager
+	public Transform EnemyTarget;                   //The object that enemies are chasing. This needs to be separate from the player because the game manager
 													//can make enemies chase something that isn't the player (as is the case with allies)
+
+	[Header("Air Drop Properties")]
+	public AirDropManager AirDropManager;            
 
 	[SerializeField] float delayOnPlayerDeath = 1f;	//How long to wait once the player has been defeated
 

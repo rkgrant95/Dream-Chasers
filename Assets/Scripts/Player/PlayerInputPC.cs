@@ -63,7 +63,7 @@ public class PlayerInputPC : MonoBehaviour
 		float horizontal = Input.GetAxisRaw("Horizontal");
 		float vertical = Input.GetAxisRaw("Vertical");
 		//Tell the movement script to move on the X and Z axes with no Y axis movement
-		playerMovement.MoveDirection = new Vector3(horizontal, 0, vertical);
+		playerMovement.MoveDirection = new Vector3(horizontal, 0, 0);
 		//If there is a MouseLocation script and the mouse's position is valid...
 		if (MouseLocation.Instance != null && MouseLocation.Instance.IsValid) {
 			//Find the point the player should look at by subtracting the player's position from the mouse's position
