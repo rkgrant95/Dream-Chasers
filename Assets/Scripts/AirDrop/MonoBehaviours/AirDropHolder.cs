@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class AirDropHolder : MonoBehaviour
 {
-    public AirDropHolderUtility airDropHolder;
+    public AirDropHolderUtility utility;
 
 }

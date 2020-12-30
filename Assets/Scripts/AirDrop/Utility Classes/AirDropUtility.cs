@@ -15,10 +15,6 @@ public class AirDropUtility
 
     [Tooltip ("The Drop ID, will be used to tell the weapon system what weapon to switch to or effect to bestow")]
     public int dropId;
-
-    [Tooltip("The gameobject that will represent the weapon drop in game")]
-    public GameObject dropGO;
-
     #endregion
 
     #region Active Time
@@ -35,11 +31,10 @@ public class AirDropUtility
 
     public AirDropUtility(AirDropUtility _airDropUtility)
     {
+        useRandomActiveTime = _airDropUtility.useRandomActiveTime;
         airDropType = _airDropUtility.airDropType;
         dropId = _airDropUtility.dropId;
-        dropGO = _airDropUtility.dropGO;
         activeTime = _airDropUtility.activeTime;
-        useRandomActiveTime = _airDropUtility.useRandomActiveTime;
     }
 
     public void AirDropCollected(AirDrop _airDrop)

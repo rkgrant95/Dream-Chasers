@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_other.GetComponent<AirDrop>())
         {
-			_other.GetComponent<AirDrop>().airDrop.AirDropCollected(_other.GetComponent<AirDrop>());
+			_other.GetComponent<AirDrop>().utility.AirDropCollected(_other.GetComponent<AirDrop>());
 		}
     }
 

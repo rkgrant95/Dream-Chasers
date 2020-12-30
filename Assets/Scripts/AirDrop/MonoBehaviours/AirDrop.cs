@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AirDrop : MonoBehaviour
 {
-    public AirDropUtility airDrop;
+    public AirDropUtility utility;
 
   
 }
