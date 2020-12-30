@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum AirDropType { Weapon, Equipment, }
+public enum AirDropType { Weapon, Equipment, Tactical }
 
 [System.Serializable]
 public class AirDropUtility 

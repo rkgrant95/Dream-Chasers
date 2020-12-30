@@ -33,7 +33,7 @@ public class AirDropManagerUtility
 
     public List<AirDrop> weaponDropPrefabs;
     public List<AirDrop> equipmentDropPrefabs;
-    //public List<AirDrop> tacticalDropPrefabs;
+    public List<AirDrop> tacticalDropPrefabs;
 
     [SerializeField]
     [Tooltip("The maximum number of active airdrops at any one time")]
