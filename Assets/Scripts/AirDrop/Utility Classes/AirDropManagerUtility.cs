@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 [System.Serializable]
 public class AirDropManagerUtility
@@ -31,9 +32,9 @@ public class AirDropManagerUtility
     public AirDropHolder airDropHolderPrefab;
     public AirDropList airDropListPrefab;
 
-    public List<AirDrop> weaponDropPrefabs;
-    public List<AirDrop> equipmentDropPrefabs;
-    public List<AirDrop> tacticalDropPrefabs;
+    public List<GameObject> weaponDropPrefabs;
+    public List<GameObject> equipmentDropPrefabs;
+    public List<GameObject> tacticalDropPrefabs;
 
     [SerializeField]
     [Tooltip("The maximum number of active airdrops at any one time")]
@@ -103,6 +104,9 @@ public class AirDropManagerUtility
     /// <param name="_thisTransform"></param>
     public void Initialize(Transform _thisTransform)
     {
+        for (int i = 0; i < 3; i++)
+            PopulateAirDropList((AirDropType)i);
+
         InitializeAirDropManager(_thisTransform);
         InitializeWeaponDrops();
         InitializeEquipmentDrops();
@@ -129,8 +133,8 @@ public class AirDropManagerUtility
         {
             for (int i = 0; i < weaponDropPrefabs.Count; i++)                                                                                     // Loop through all weapon drops in the air drop manager
             {
-                weaponDropPrefabs[i].utility.airDropType = AirDropType.Weapon;                                                                            // Classify all weapon drops as weapon drops
-                weaponDropPrefabs[i].utility.dropId = i;                                                                                                  // Set all weapon drop ID's to their index
+                weaponDropPrefabs[i].GetComponent<AirDrop>().utility.airDropType = AirDropType.Weapon;                                                                            // Classify all weapon drops as weapon drops
+                weaponDropPrefabs[i].GetComponent<AirDrop>().utility.dropId = i;                                                                                                  // Set all weapon drop ID's to their index
 
                 InitializeDropList(airDropHolders[0], i);
             }
@@ -151,17 +155,17 @@ public class AirDropManagerUtility
         {
             for (int i = 0; i < equipmentDropPrefabs.Count; i++)
             {
-                equipmentDropPrefabs[i].utility.airDropType = AirDropType.Equipment;
-                equipmentDropPrefabs[i].utility.dropId = i;
+                equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.airDropType = AirDropType.Equipment;
+                equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.dropId = i;
 
                // equipmentDropPrefabs[i].utility.dropGO = GameObject.Instantiate(equipmentDropPrefabs[i].utility.dropGO);
 
                 if (overrideAirDropActiveTime)
                 {
                     if (useRandomActiveTime)
-                        equipmentDropPrefabs[i].utility.activeTime = Random.Range(5, 30);
+                        equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.activeTime = Random.Range(5, 30);
                     else
-                        equipmentDropPrefabs[i].utility.activeTime = airDropActiveTime;
+                        equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.activeTime = airDropActiveTime;
                 }
             }
         }
@@ -185,7 +189,7 @@ public class AirDropManagerUtility
 
         for (int j = 0; j < maxAirDropClones; j++)
         {
-            _airDropHolder.utility.airDropLists[_index].utility.airDrops.Add(GenereateNewAirDrop(weaponDropPrefabs[_index], _airDropHolder.utility.airDropLists[_index].transform));         // Add the new air drop to the air drop list
+            _airDropHolder.utility.airDropLists[_index].utility.airDrops.Add(GenereateNewAirDrop(weaponDropPrefabs[_index].GetComponent<AirDrop>(), _airDropHolder.utility.airDropLists[_index].transform));         // Add the new air drop to the air drop list
 
             if (overrideAirDropActiveTime)                                                                                              // If we want to override the prefab active time to the air drop manager preset
             {
@@ -195,6 +199,62 @@ public class AirDropManagerUtility
                     _airDropHolder.utility.airDropLists[_index].utility.airDrops[j].utility.activeTime = airDropActiveTime;                                                                      // Else use the preset active time value
             }
 
+        }
+    }
+
+    /// <summary>
+    /// Populates the air drop prefab lists from the asset directory
+    /// </summary>
+    /// <param name="_airDropType"></param>
+    private void PopulateAirDropList(AirDropType _airDropType)
+    {
+        System.IO.DirectoryInfo dir;                                                                                                                            // Get the file directory for the air drop folder
+        int prefabCount = 0;                                                                                                                                    // How many prefabs are present in the directory                               
+        GameObject adPrefab;                                                                                                                                    // Temporary game object to store the prefab in 
+        string prefabPath = Statics.EmptyString;                                                                                                                // Path to locate each prefab 
+
+        switch (_airDropType)                                                                                                                                   // Initialise variables based on air drop type
+        {
+            case AirDropType.Weapon:
+                weaponDropPrefabs.Clear();
+                dir = new System.IO.DirectoryInfo(Statics.WeaponDropFolderPath);                                                                                    
+                prefabCount = dir.GetFiles().Length / 2;                                                                                                            
+                prefabPath = Statics.WeaponDropPath;
+                break;
+            case AirDropType.Equipment:
+                equipmentDropPrefabs.Clear();
+                dir = new System.IO.DirectoryInfo(Statics.EquipmentDropFolderPath);
+                prefabCount = dir.GetFiles().Length / 2;
+                prefabPath = Statics.EquipmentDropPath;
+                break;
+            case AirDropType.Tactical:
+                tacticalDropPrefabs.Clear();
+                dir = new System.IO.DirectoryInfo(Statics.TacticalDropFolderPath);
+                prefabCount = dir.GetFiles().Length / 2;
+                prefabPath = Statics.TacticalDropPath;
+                break;
+            default:
+                break;
+        }
+
+        for (int i = 0; i < prefabCount; i++)                                                                                                                    // Add air drop prefabs to the list 
+        {
+            adPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(prefabPath + i + Statics.PrefabExtension, typeof(GameObject));
+
+            switch (_airDropType)
+            {
+                case AirDropType.Weapon:
+                    weaponDropPrefabs.Add(adPrefab);
+                    break;
+                case AirDropType.Equipment:
+                    equipmentDropPrefabs.Add(adPrefab);
+                    break;
+                case AirDropType.Tactical:
+                    tacticalDropPrefabs.Add(adPrefab);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
