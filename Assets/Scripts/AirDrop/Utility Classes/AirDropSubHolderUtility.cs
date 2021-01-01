@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class AirDropListUtility
+public class AirDropSubHolderUtility
 {
     public string name;
     [SerializeField]
@@ -14,12 +14,12 @@ public class AirDropListUtility
     /// </summary>
     /// <param name="_airDropList"></param>
     /// <param name="_index"></param>
-    public AirDropListUtility(string _name)
+    public AirDropSubHolderUtility(string _name)
     {
         name = _name;                                                                                                  // Set the name of the list class 
     }
 
-    public AirDropListUtility(AirDropListUtility _airDropUtility)
+    public AirDropSubHolderUtility(AirDropSubHolderUtility _airDropUtility)
     {
         name = _airDropUtility.name;
         airDrops = _airDropUtility.airDrops;

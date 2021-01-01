@@ -7,7 +7,7 @@ using UnityEngine;
 public class AirDropHolderUtility
 {
     public string name;
-    public List<AirDropList> airDropLists = new List<AirDropList>();
+    public List<AirDropSubHolder> airDropSubHolder = new List<AirDropSubHolder>();
 
     /// <summary>
     /// Initialize Air Drop Holder Utility
@@ -27,7 +27,7 @@ public class AirDropHolderUtility
     public AirDropHolderUtility(AirDropHolderUtility _refAirDropHolderUtility)
     {
         name = _refAirDropHolderUtility.name;
-        airDropLists = _refAirDropHolderUtility.airDropLists;
+        airDropSubHolder = _refAirDropHolderUtility.airDropSubHolder;
     }
 
 

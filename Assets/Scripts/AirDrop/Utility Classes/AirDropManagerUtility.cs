@@ -1,17 +1,52 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
+
 [System.Serializable]
 public class AirDropManagerUtility
 {
+    #region Variables
+
+    #region Air Drop Prefabs
+    [Header("Air Drop Prefabs")]
+    [Tooltip("Air drop holder prefab")]
+    private GameObject airDropHolderPrefab;
+
+    [Tooltip("Air drop list prefab")]
+    private GameObject airDropSubHolderPrefab;
+
+    [Tooltip("List of weapon air drop prefabs")]
+    [SerializeField]
+    private List<GameObject> weaponDropPrefabs;
+
+    [Tooltip("List of equipment air drop prefabs")]
+    [SerializeField]
+    private List<GameObject> equipmentDropPrefabs;
+
+    [Tooltip("List of tactical air drop prefabs")]
+    [SerializeField]
+    private List<GameObject> tacticalDropPrefabs;
+
+    #endregion
+
+    #region Child References
+    public List<AirDropHolder> airDropHolders = new List<AirDropHolder>();
+    #endregion
+
+    #endregion
+
+    #region Functions
+
+    #region Air Drop Fields & Modifiers
+
+    [SerializeField] private Collider airDropExtentsCollider;
+
     [Tooltip("The type of air drop that will be received")]
     public AirDropType nextAirDropTypeToSpawn;
 
-    public List<AirDropHolder> airDropHolders = new List<AirDropHolder>(3);
-
-    [SerializeField] private Collider playableCollider;
-
+    [Header("Air drop modifiers & fields")]
     [Range(5, 60)]
     [Tooltip("The frequency of an air drop")]
     public int airDropFrequency;
@@ -29,25 +64,24 @@ public class AirDropManagerUtility
     [Tooltip("The amount of time the air drop will stay active before despawning")]
     public float airDropActiveTime;
 
-    public AirDropHolder airDropHolderPrefab;
-    public AirDropList airDropListPrefab;
-
-    public List<GameObject> weaponDropPrefabs;
-    public List<GameObject> equipmentDropPrefabs;
-    public List<GameObject> tacticalDropPrefabs;
-
-    [SerializeField]
     [Tooltip("The maximum number of active airdrops at any one time")]
+    [SerializeField]
     private int maxActiveAirDrops = 5;
+    [Tooltip("The current number of active airdrops")]
     public int currentAirDrops = 0;
 
     [Tooltip("The maximum number of airdrops of the same type that can be active at the same time")]
-    public int maxAirDropClones = 3;
+    [SerializeField]
+    private int maxAirDropClones = 3;
 
 
     [Header("Debugging Properties")]
     [SerializeField] private bool canSpawn = true;      //Can this spawner spawn enemies? This is useful for testing when you want to turn a spawner off
     [SerializeField] private bool showDebugs = true;
+
+    #endregion
+
+    #region Air Drop spawner functions
 
     public IEnumerator SpawnAirDrop()
     {
@@ -60,15 +94,23 @@ public class AirDropManagerUtility
                 yield return new WaitForSeconds(airDropFrequency - 1);                                                                  // Wait for delay to end
 
                 // RandomizeAirDropFrequency(5, 60);
-                RandomizeAirDropType(0, 1);                                                                                             // Determine air drop type
+                RandomizeAirDropType(0, 3);                                                                                             // Determine air drop type
 
-                switch (nextAirDropTypeToSpawn)                                                                                         // Switch statement depending on air drop type
+                int dropID = -1;
+
+                switch (nextAirDropTypeToSpawn)
                 {
                     case AirDropType.Weapon:
-                        SpawnWeaponDrop();                                                                                              // Spawn a new weapon drop
+                        dropID = Random.Range(0, weaponDropPrefabs.Count);                                                              // Get a random dropID to spawn a specific type of weapon drop
+                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);                                                              // Spawn the air drop
                         break;
                     case AirDropType.Equipment:
-                        SpawnEquipmentDrop();                                                                                           // Spawn a new equipment drop
+                        dropID = Random.Range(0, equipmentDropPrefabs.Count);
+                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);
+                        break;
+                    case AirDropType.Tactical:
+                        dropID = Random.Range(0, tacticalDropPrefabs.Count);
+                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);
                         break;
                     default:
                         break;
@@ -77,26 +119,23 @@ public class AirDropManagerUtility
         }
     }
 
-    private void SpawnWeaponDrop()
+    private void SpawnAirDrop(int _index, int _dropID)
     {
-        int weaponID = Random.Range(0, weaponDropPrefabs.Count);
-
-        for (int j = 0; j < maxAirDropClones; j++)
+        for (int i = 0; i < maxAirDropClones; i++)
         {
-            if (!airDropHolders[0].utility.airDropLists[weaponID].utility.airDrops[j].gameObject.activeSelf)
+            if (!airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].gameObject.activeSelf)
             {
-                airDropHolders[0].utility.airDropLists[weaponID].utility.airDrops[j].transform.position = GetAirDropSpawnPosition();
-                airDropHolders[0].utility.airDropLists[weaponID].utility.airDrops[j].gameObject.SetActive(true);
+                airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].transform.position = GetAirDropSpawnPosition();
+                airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].gameObject.SetActive(true);
                 currentAirDrops++;
                 break;
             }
         }
     }
 
-    private void SpawnEquipmentDrop()
-    {
+    #endregion
 
-    }
+    #region Initializers, initializes important variables, classes and lists
 
     /// <summary>
     /// Runs the initialization functions for Air Drop Manager, Weapon Drops & Equipment Drops
@@ -104,12 +143,13 @@ public class AirDropManagerUtility
     /// <param name="_thisTransform"></param>
     public void Initialize(Transform _thisTransform)
     {
-        for (int i = 0; i < 3; i++)
-            PopulateAirDropList((AirDropType)i);
+        for (int i = -1; i < 3; i++)
+            PopulateAirDropPrefabsFromAssetDatabase((AirDropType)i);
 
         InitializeAirDropManager(_thisTransform);
-        InitializeWeaponDrops();
-        InitializeEquipmentDrops();
+
+        for (int i = 0; i < 3; i++)
+            InitializeAirDropSubHolders(airDropHolders[i], i);
     }
 
     /// <summary>
@@ -118,87 +158,68 @@ public class AirDropManagerUtility
     /// <param name="_thisTransform"></param>
     private void InitializeAirDropManager(Transform _parentTransform)
     {
-        airDropHolders.Add(GenereateNewAirDropholder(airDropHolderPrefab, "Weapon Drop Holder", _parentTransform));
-        airDropHolders.Add(GenereateNewAirDropholder(airDropHolderPrefab, "Equipment Drop Holder", _parentTransform));
-        airDropHolders.Add(GenereateNewAirDropholder(airDropHolderPrefab, "Tactical Drop Holder", _parentTransform));
+        AirDropHolder adHolder = airDropHolderPrefab.GetComponent<AirDropHolder>();
+        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.WeaponDropHolderName, _parentTransform));
+        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.EquipmentDropHolderName, _parentTransform));
+        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.TacticalDropHolderName, _parentTransform));
 
     }
 
-    /// <summary>
-    /// Initialize the Weapon Drops for the Air Drop Manager
-    /// </summary>
-    private void InitializeWeaponDrops()
-    {
-        if (weaponDropPrefabs.Count > 0)                                                                                                          // If we have weapon weapon drop classes in the air drop manager    
-        {
-            for (int i = 0; i < weaponDropPrefabs.Count; i++)                                                                                     // Loop through all weapon drops in the air drop manager
-            {
-                weaponDropPrefabs[i].GetComponent<AirDrop>().utility.airDropType = AirDropType.Weapon;                                                                            // Classify all weapon drops as weapon drops
-                weaponDropPrefabs[i].GetComponent<AirDrop>().utility.dropId = i;                                                                                                  // Set all weapon drop ID's to their index
-
-                InitializeDropList(airDropHolders[0], i);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Warning!!! Weapon air drop list is empty. Populate the list in the Air Drop Manager");
-        }
-
-    }
-
-    /// <summary>
-    /// Initialize the Equipment Drops for the Air Drop Manager
-    /// </summary>
-    private void InitializeEquipmentDrops()
-    {
-        if (equipmentDropPrefabs.Count > 0)
-        {
-            for (int i = 0; i < equipmentDropPrefabs.Count; i++)
-            {
-                equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.airDropType = AirDropType.Equipment;
-                equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.dropId = i;
-
-               // equipmentDropPrefabs[i].utility.dropGO = GameObject.Instantiate(equipmentDropPrefabs[i].utility.dropGO);
-
-                if (overrideAirDropActiveTime)
-                {
-                    if (useRandomActiveTime)
-                        equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.activeTime = Random.Range(5, 30);
-                    else
-                        equipmentDropPrefabs[i].GetComponent<AirDrop>().utility.activeTime = airDropActiveTime;
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Warning!!! Equipment air drop list is empty. Populate the list in the Air Drop Manager");
-        }
-    }
 
     /// <summary>
     /// Sets up the air drop lists to hold the air drop game objects at run time
     /// </summary>
     /// <param name="_airDropList"></param>
-    /// <param name="_index"></param>
-    private void InitializeDropList(AirDropHolder _airDropHolder, int _index)
+    /// <param name="_enumIndex"></param>
+    private void InitializeAirDropSubHolders(AirDropHolder _airDropHolder, int _enumIndex)
     {
-        _airDropHolder.utility.airDropLists.Add(GenerateNewAirDropList(airDropListPrefab, "Weapon Drop Sub-Holder " + _index, _airDropHolder.transform));
+        switch ((AirDropType)_enumIndex)
+        {
+            case AirDropType.Weapon:
+                for (int i = 0; i < weaponDropPrefabs.Count; i++)
+                {
+                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<AirDropSubHolder>(), Statics.WeaponDropSubHolderName + i, _airDropHolder.transform));
+                    InitializeAirDropSubHolder(_airDropHolder, i, weaponDropPrefabs);
+                }
+                break;
+            case AirDropType.Equipment:
+                for (int i = 0; i < equipmentDropPrefabs.Count; i++)
+                {
+                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<AirDropSubHolder>(), Statics.EquipmentDropSubHolderName + i, _airDropHolder.transform));
+                    InitializeAirDropSubHolder(_airDropHolder, i, equipmentDropPrefabs);
+                }
+                break;
+            case AirDropType.Tactical:
+                for (int i = 0; i < tacticalDropPrefabs.Count; i++)
+                {
+                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<AirDropSubHolder>(), Statics.TacticalDropSubHolderName + i, _airDropHolder.transform));
+                    InitializeAirDropSubHolder(_airDropHolder, i, tacticalDropPrefabs);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-        
-        int rand = Random.Range(5, 30);
+    private void InitializeAirDropSubHolder(AirDropHolder _airDropHolder, int _index, List<GameObject> _airDropPrefabs)
+    {
+        int rand = 0;
+
+        if (useRandomActiveTime)                                                                                                // If we want to use a random value
+            rand = Random.Range(5, 30);
 
         for (int j = 0; j < maxAirDropClones; j++)
         {
-            _airDropHolder.utility.airDropLists[_index].utility.airDrops.Add(GenereateNewAirDrop(weaponDropPrefabs[_index].GetComponent<AirDrop>(), _airDropHolder.utility.airDropLists[_index].transform));         // Add the new air drop to the air drop list
+            _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops.Add(GenereateNewAirDrop(_airDropPrefabs[_index].GetComponent<AirDrop>(), _airDropHolder.utility.airDropSubHolder[_index].transform));         // Add the new air drop to the air drop list
+            _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.dropId = _index;                                                               // Set the weapon drop active time to a random value
 
             if (overrideAirDropActiveTime)                                                                                              // If we want to override the prefab active time to the air drop manager preset
             {
                 if (useRandomActiveTime)                                                                                                // If we want to use a random value
-                    _airDropHolder.utility.airDropLists[_index].utility.airDrops[j].utility.activeTime = rand;                                                                  // Set the weapon drop active time to a random value
+                    _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.activeTime = rand;                                                                  // Set the weapon drop active time to a random value
                 else
-                    _airDropHolder.utility.airDropLists[_index].utility.airDrops[j].utility.activeTime = airDropActiveTime;                                                                      // Else use the preset active time value
+                    _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.activeTime = airDropActiveTime;                                                                      // Else use the preset active time value
             }
-
         }
     }
 
@@ -206,7 +227,7 @@ public class AirDropManagerUtility
     /// Populates the air drop prefab lists from the asset directory
     /// </summary>
     /// <param name="_airDropType"></param>
-    private void PopulateAirDropList(AirDropType _airDropType)
+    private void PopulateAirDropPrefabsFromAssetDatabase(AirDropType _airDropType)
     {
         System.IO.DirectoryInfo dir;                                                                                                                            // Get the file directory for the air drop folder
         int prefabCount = 0;                                                                                                                                    // How many prefabs are present in the directory                               
@@ -234,6 +255,9 @@ public class AirDropManagerUtility
                 prefabPath = Statics.TacticalDropPath;
                 break;
             default:
+                airDropHolderPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirDropHolderPath, typeof(GameObject));
+                airDropSubHolderPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirDropListPath, typeof(GameObject));
+
                 break;
         }
 
@@ -258,13 +282,16 @@ public class AirDropManagerUtility
         }
     }
 
+    #endregion
 
-    public AirDropList GenerateNewAirDropList(AirDropList _refAirDropList, string _airDropListName, Transform _parentTransform)
+    #region Generate new instances of various air drops & air drop managers
+
+    public AirDropSubHolder GenerateNewAirDropSubHolder(AirDropSubHolder _refAirDropList, string _airDropListName, Transform _parentTransform)
     {
         GameObject tempGO = GameObject.Instantiate(_refAirDropList.gameObject);
-        AirDropList retVal = tempGO.GetComponent<AirDropList>();
+        AirDropSubHolder retVal = tempGO.GetComponent<AirDropSubHolder>();
 
-        retVal.utility = new AirDropListUtility(_airDropListName);
+        retVal.utility = new AirDropSubHolderUtility(_airDropListName);
         retVal.gameObject.name = retVal.utility.name;
         retVal.transform.parent = _parentTransform;
 
@@ -295,6 +322,9 @@ public class AirDropManagerUtility
         return retVal;
     }
 
+    #endregion
+
+    #region Utility Functions
     private void RandomizeAirDropFrequency(int _lowerLimit, int _upperLimit)
     {
         if (useRandomAirDropFrequency)
@@ -309,10 +339,13 @@ public class AirDropManagerUtility
     private Vector3 GetAirDropSpawnPosition()
     {
         Vector3 retVal = Vector3.zero;
-        retVal = new Vector3(playableCollider.bounds.extents.x * Random.Range(-0.95f, 0.95f), 10, playableCollider.bounds.center.z);
+        retVal = new Vector3(airDropExtentsCollider.bounds.extents.x * Random.Range(-0.95f, 0.95f), 10, airDropExtentsCollider.bounds.center.z);
 
         return retVal;
     }
 
+    #endregion
+
+    #endregion
 }
 

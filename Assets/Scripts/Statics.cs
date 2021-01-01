@@ -31,5 +31,35 @@ public static class Statics
     public static string TacticalDropFolderPath = "Assets/Prefabs/Air Drop Prefabs/Tactical Air Drop Prefabs";
     #endregion
 
+    #region Sub-Holder Names
+    public static string WeaponDropListName = "Weapon Drop Sub-Holder ";
+    public static string EquipmentDropListName = "Equipment Drop Sub-Holder ";
+    public static string TacticalDropListName = "Tactical Drop Sub-Holder ";
+    #endregion
+
+    #endregion
+
+    #region Air Drop Holder Identification Strings
+
+    #region Holder Paths
+    public static string AirDropManagerFolderPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Manager Prefabs";
+
+    public static string AirDropManagerPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Manager Prefabs/Air Drop Manager.prefab";
+    public static string AirDropListPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Manager Prefabs/Air Drop List Prefab.prefab";
+    public static string AirDropHolderPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Manager Prefabs/Air Drop Holder Prefab.prefab";
+    #endregion
+
+    #region Holder Names
+    public static string WeaponDropHolderName = "Weapon Drop Holder";
+    public static string EquipmentDropHolderName = "Equipment Drop Holder";
+    public static string TacticalDropHolderName = "Tactical Drop Holder";
+    #endregion
+
+    #region Holder Names
+    public static string WeaponDropSubHolderName = "Weapon Drop Sub-Holder ";
+    public static string EquipmentDropSubHolderName = "Equipment Drop Sub-Holder ";
+    public static string TacticalDropSubHolderName = "Tactical Drop Sub-Holder ";
+    #endregion
+
     #endregion
 }
