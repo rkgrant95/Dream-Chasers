@@ -32,8 +32,7 @@ public class GameManager : MonoBehaviour
 	[SerializeField] Animator cameraAnimator;		//A reference to the animator on the camera (to transition it when the player is chosen)
 
 	[Header("Ally Properties")]
-	[SerializeField] AllyManager allyManager;		//A reference to the attached ally manager script
-
+	[SerializeField] AllyManager allyManager;       //A reference to the attached ally manager script
 	int score = 0;									//The player's current score
 
 	void Awake()

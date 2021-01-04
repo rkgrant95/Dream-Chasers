@@ -29,19 +29,16 @@ public class AirDropManagerUtility
     [SerializeField]
     private List<GameObject> tacticalDropPrefabs;
 
+
     #endregion
 
     #region Child References
     public List<AirDropHolder> airDropHolders = new List<AirDropHolder>();
     #endregion
 
-    #endregion
-
-    #region Functions
-
     #region Air Drop Fields & Modifiers
 
-    [SerializeField] private Collider airDropExtentsCollider;
+    public Collider airDropExtentsCollider;
 
     [Tooltip("The type of air drop that will be received")]
     public AirDropType nextAirDropTypeToSpawn;
@@ -80,6 +77,10 @@ public class AirDropManagerUtility
     [SerializeField] private bool showDebugs = true;
 
     #endregion
+
+    #endregion
+
+    #region Functions
 
     #region Air Drop spawner functions
 
