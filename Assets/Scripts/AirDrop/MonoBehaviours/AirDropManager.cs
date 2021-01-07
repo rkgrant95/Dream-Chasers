@@ -4,25 +4,33 @@ using UnityEngine;
 
 public class AirDropManager : MonoBehaviour
 {
-    public AirDropManagerUtility utiity;
+    public AirDropManagerUtility adUtility;
+    public AirDropFlightManagerUtility adfUtility;
+
 
     #region create class for flyer manager
-    public Transform homeTarget;
-    public Transform flyingTarget;
+    public Collider airDropZone;
+    public Collider backdropZone;
     #endregion
+
+
     void Awake()
     {
+       
     }
     // Start is called before the first frame update
     void Start()
     {
-        utiity.Initialize(this.transform);
-        StartCoroutine(utiity.SpawnAirDrop());
+        adUtility.Initialize(this.transform);
+        StartCoroutine(adUtility.SpawnAirDrop());
+
+        adfUtility.Initialize(this.transform);
+        StartCoroutine(adfUtility.ShowDebugs(this.gameObject));
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        adfUtility.FixedTick();
     }
 }

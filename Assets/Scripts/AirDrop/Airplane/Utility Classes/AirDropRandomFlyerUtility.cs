@@ -6,7 +6,7 @@ using UnityEngine;
 public class AirDropRandomFlyerUtility 
 {
 
-    public enum FlyingState { RandomFlight, Airdrop, }
+    public enum FlyingState { RandomFlight, TransitionToAirDrop, Airdrop, }
     public FlyingState currentState;
 
     private string name;
@@ -38,14 +38,17 @@ public class AirDropRandomFlyerUtility
     public float randomBaseOffset = 5;
     public float delayStart = 0f;
 
+    [SerializeField]
     private Animator animator;
+    [SerializeField]
     private Rigidbody body;
 
     [System.NonSerialized]
     public float changeTarget = 0f, changeAnim = 0f, timeSinceTarget = 0f, timeSinceAnim = 0f, prevAnim, currentAnim = 0f, prevSpeed, speed, zturn, prevz, turnSpeedBackup;
-    private Vector3 rotateTarget, position, direction, velocity, randomizedBase;
+    public Vector3 rotateTarget, position, direction, velocity, randomizedBase;
     private Quaternion lookRotation;
-    [System.NonSerialized] public float distanceFromBase, distanceFromTarget;
+    [System.NonSerialized] 
+    public float distanceFromBase, distanceFromTarget;
 
     public GameObject targetPosIndicator;
 
@@ -55,7 +58,7 @@ public class AirDropRandomFlyerUtility
         currentState = FlyingState.RandomFlight;
 
         idleSpeed = 10;
-        turnSpeed = 80;
+        turnSpeed = 75;
         switchSeconds = 3;
         idleRatio = 0.3f;
 
@@ -64,15 +67,21 @@ public class AirDropRandomFlyerUtility
         changeAnimEveryFromTo = new Vector2(2, 4);
         changeTargetEveryFromTo = new Vector2(3, 8);
 
-        radiusMinMax = new Vector2(15, 60);
-        yMinMax = new Vector2(10, 40);
+        radiusMinMax = new Vector2(-60, 60);
+        yMinMax = new Vector2(0, 50);
 
         delayStart = 0;
-        randomBaseOffset = 5;
-        returnToBase = false;
+        randomBaseOffset = 2.5f;
 
-        homeTarget = GameManager.Instance.AirDropManager.homeTarget;
-        flyingTarget = GameManager.Instance.AirDropManager.flyingTarget;
+        returnToBase = true;
+
+        /*
+        if (targetPosIndicator)
+        {
+            homeTarget = targetPosIndicator.transform;
+            flyingTarget = targetPosIndicator.transform;
+        }
+        */
 
     }
 
@@ -112,7 +121,10 @@ public class AirDropRandomFlyerUtility
 
         // Calculate distances
         distanceFromBase = Vector3.Magnitude(randomizedBase - body.position);
-        distanceFromTarget = Vector3.Magnitude(flyingTarget.position - body.position);
+        //distanceFromTarget = Vector3.Magnitude(flyingTarget.position - body.position);
+
+
+        distanceFromTarget = Vector3.Magnitude(targetPosIndicator.transform.position - body.position);
 
         AllowDrasticTurns();
 
@@ -126,18 +138,28 @@ public class AirDropRandomFlyerUtility
 
         UpdateRotation();
 
-        UpdateFlyerMovement(_thisGameObject);     
+        UpdateFlyerMovement(_thisGameObject);
+
+
     }
 
-    public void Initialize(GameObject _thisGameObject)
+    public void Initialize(GameObject _thisGameObject, GameObject _targetPosIndicator)
     {
         // Inititalize
         _thisGameObject.name = name;
+
         animator = _thisGameObject.GetComponent<Animator>();
         body = _thisGameObject.GetComponent<Rigidbody>();
+
+        targetPosIndicator = _targetPosIndicator;
+        homeTarget = targetPosIndicator.transform;
+        flyingTarget = targetPosIndicator.transform;
+
         turnSpeedBackup = turnSpeed;
         direction = Quaternion.Euler(_thisGameObject.transform.eulerAngles) * (Vector3.forward);
-        if (delayStart < 0f) body.velocity = idleSpeed * direction;
+
+        if (delayStart < 0f) 
+            body.velocity = idleSpeed * direction;
     }
 
     private void AllowDrasticTurns()
@@ -145,10 +167,10 @@ public class AirDropRandomFlyerUtility
         // Allow drastic turns close to base to ensure target can be reached
         if (returnToBase && distanceFromBase < 10f)
         {
-            if (turnSpeed != 300f && body.velocity.magnitude != 0f)
+            if (turnSpeed != 150f && body.velocity.magnitude != 0f)
             {
                 turnSpeedBackup = turnSpeed;
-                turnSpeed = 300f;
+                turnSpeed = 150f;
             }
             else if (distanceFromBase <= 2f)
             {
@@ -280,48 +302,23 @@ public class AirDropRandomFlyerUtility
     // Select a new direction to fly in randomly
     private Vector3 ChangeDirection(Vector3 _currentPosition)
     {
-        Vector3 newDir;
-        if (returnToBase)
-        {
-            randomizedBase = homeTarget.position;
-            //randomizedBase = ReturnRandomPositionInBounds(GameManager.Instance.AirDropManager.utiity.airDropExtentsCollider);
-            randomizedBase.y += Random.Range(-randomBaseOffset, randomBaseOffset);
-            //randomizedBase.y = 15;
-            //randomizedBase.z = GameManager.Instance.AirDropManager.utiity.airDropExtentsCollider.bounds.center.z;
+        Vector3 newDir = Vector3.zero;
 
-            targetPosIndicator.transform.position = randomizedBase;
+        switch (currentState)
+        {
+            case FlyingState.RandomFlight:
+                newDir = targetPosIndicator.transform.position - _currentPosition;
+                break;
+            case FlyingState.TransitionToAirDrop:
+                newDir = targetPosIndicator.transform.position - _currentPosition;
+                break;
+            case FlyingState.Airdrop:
+                newDir = targetPosIndicator.transform.position - _currentPosition;
+                break;
+            default:
+                break;
+        }
 
-            //Debug.Log(randomizedBase);
-            newDir = randomizedBase - _currentPosition;
-            //returnToBase = false;
-        }
-        else if (distanceFromTarget > radiusMinMax.y)
-        {
-            newDir = flyingTarget.position - _currentPosition;
-        }
-        else if (distanceFromTarget < radiusMinMax.x)
-        {
-            newDir = _currentPosition - flyingTarget.position;
-        }
-        else
-        {
-            // 360-degree freedom of choice on the horizontal plane
-            float angleXZ = Random.Range(-Mathf.PI, Mathf.PI);
-            // Limited max steepness of ascent/descent in the vertical direction
-            float angleY = Random.Range(-Mathf.PI / 48f, Mathf.PI / 48f);
-            // Calculate direction
-            newDir = Mathf.Sin(angleXZ) * Vector3.forward + Mathf.Cos(angleXZ) * Vector3.right + Mathf.Sin(angleY) * Vector3.up;
-        }
         return newDir.normalized;
     }
-
-
-    public Vector3 ReturnRandomPositionInBounds(Collider _collider)
-    {
-        return new Vector3(Random.Range(_collider.bounds.min.x, _collider.bounds.max.x),
-        Random.Range(_collider.bounds.min.y, _collider.bounds.max.y),
-        Random.Range(_collider.bounds.min.z, _collider.bounds.max.z));
-    }
-
-
 }

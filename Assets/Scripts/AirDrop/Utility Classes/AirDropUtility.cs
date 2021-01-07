@@ -39,7 +39,7 @@ public class AirDropUtility
 
     public void AirDropCollected(AirDrop _airDrop)
     {
-        GameManager.Instance.AirDropManager.utiity.currentAirDrops--;
+        GameManager.Instance.AirDropManager.adUtility.currentAirDrops--;
         _airDrop.gameObject.SetActive(false);
     }
 

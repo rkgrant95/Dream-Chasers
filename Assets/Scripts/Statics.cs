@@ -8,6 +8,8 @@ public static class Statics
     #region Utilities
     public static string EmptyString = "";
     public static string PrefabExtension = ".prefab";
+    public static string IndicatorName = "Indicator";
+    public static string AirDropFlyerName = "Air-drop flyer";
     #endregion
     
     #region Air Drop Prefab Path Identification Strings

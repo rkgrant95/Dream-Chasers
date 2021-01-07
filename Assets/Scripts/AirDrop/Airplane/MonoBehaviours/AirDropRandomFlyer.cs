@@ -9,14 +9,12 @@ public class AirDropRandomFlyer : MonoBehaviour
 {
     public AirDropRandomFlyerUtility utility;
 
-    void Start()
+    private void OnTriggerEnter(Collider other)
     {
-        utility = new AirDropRandomFlyerUtility("I am a new plane");
-        utility.Initialize(this.gameObject);
-    }
-
-    void FixedUpdate()
-    {
-        utility.FixedTick(this.gameObject);
+        if (other.gameObject == utility.targetPosIndicator)
+        {
+            GameManager.Instance.AirDropManager.adfUtility.TestTargetPositionIndicator(utility.targetPosIndicator.transform);
+           // GameManager.Instance.AirDropManager.adfUtility.TestIndicatorSpawnAirDrop();
+        }
     }
 }

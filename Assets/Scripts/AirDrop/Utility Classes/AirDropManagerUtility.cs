@@ -78,6 +78,7 @@ public class AirDropManagerUtility
 
     #endregion
 
+
     #endregion
 
     #region Functions
@@ -98,6 +99,8 @@ public class AirDropManagerUtility
                 RandomizeAirDropType(0, 3);                                                                                             // Determine air drop type
 
                 int dropID = -1;
+
+                GameManager.Instance.AirDropManager.adfUtility.airDropSpawnBacklog++;
 
                 switch (nextAirDropTypeToSpawn)
                 {
