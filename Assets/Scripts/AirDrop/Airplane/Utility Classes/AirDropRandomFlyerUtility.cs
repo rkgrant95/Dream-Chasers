@@ -50,7 +50,7 @@ public class AirDropRandomFlyerUtility
     [System.NonSerialized] 
     public float distanceFromBase, distanceFromTarget;
 
-    public GameObject targetPosIndicator;
+    public AirDropFlightIndicator targetPosIndicator;
 
     public AirDropRandomFlyerUtility(string _name)
     {
@@ -143,7 +143,7 @@ public class AirDropRandomFlyerUtility
 
     }
 
-    public void Initialize(GameObject _thisGameObject, GameObject _targetPosIndicator)
+    public void Initialize(GameObject _thisGameObject, AirDropFlightIndicator _targetPosIndicator)
     {
         // Inititalize
         _thisGameObject.name = name;

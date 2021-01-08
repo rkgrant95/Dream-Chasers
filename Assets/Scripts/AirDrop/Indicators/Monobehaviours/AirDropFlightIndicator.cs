@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class AirDropFlightIndicator : MonoBehaviour
 {
-    public enum IndicatorState { Backdrop, AirDrop, }
-    public IndicatorState indicatorState;
-
-    public float cooldown;
+    public AirDropFlightIndicatorUtility utility;
 
 
 }

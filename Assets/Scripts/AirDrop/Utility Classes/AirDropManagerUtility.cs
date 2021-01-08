@@ -81,40 +81,48 @@ public class AirDropManagerUtility
 
     #endregion
 
+    #region Flight Manager Variables
+    private GameObject flightHolder;
+    private GameObject indicatorHolder;
+
+    public GameObject airDropFlyerPrefab;
+    public GameObject indicatorPrefab;
+
+    public List<AirDropRandomFlyer> airDropFlyers;
+    public List<AirDropFlightIndicator> flightIndicators;
+
+    public int airDropFlyerCount = 6;
+    public int airDropSpawnBacklog = 0;
+
+    public bool debugMode;
+    #endregion
+
     #region Functions
 
     #region Air Drop spawner functions
 
-    public IEnumerator SpawnAirDrop()
+    public IEnumerator RequestAirDrop(int _iterationFrequency = 1)
     {
         while (canSpawn)                                                                                                                // While we can spawn airDrops             
         {
-            yield return new WaitForSeconds(1);                                                                                         // Loop every 1 second
+            yield return new WaitForSeconds(_iterationFrequency);                                                                                         // Loop every 1 second
 
             if (currentAirDrops < maxActiveAirDrops)                                                                                    // If we have not exceeded maximum concurrent air drops
             {
                 yield return new WaitForSeconds(airDropFrequency - 1);                                                                  // Wait for delay to end
 
-                // RandomizeAirDropFrequency(5, 60);
-                RandomizeAirDropType(0, 3);                                                                                             // Determine air drop type
-
-                int dropID = -1;
-
-                GameManager.Instance.AirDropManager.adfUtility.airDropSpawnBacklog++;
+                airDropSpawnBacklog++;
 
                 switch (nextAirDropTypeToSpawn)
                 {
                     case AirDropType.Weapon:
-                        dropID = Random.Range(0, weaponDropPrefabs.Count);                                                              // Get a random dropID to spawn a specific type of weapon drop
-                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);                                                              // Spawn the air drop
+                        RequestAirDrop();
                         break;
                     case AirDropType.Equipment:
-                        dropID = Random.Range(0, equipmentDropPrefabs.Count);
-                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);
+                        RequestAirDrop();
                         break;
                     case AirDropType.Tactical:
-                        dropID = Random.Range(0, tacticalDropPrefabs.Count);
-                        SpawnAirDrop((int)nextAirDropTypeToSpawn, dropID);
+                        RequestAirDrop();
                         break;
                     default:
                         break;
@@ -123,14 +131,42 @@ public class AirDropManagerUtility
         }
     }
 
-    private void SpawnAirDrop(int _index, int _dropID)
+
+    private void RequestAirDrop()
     {
+        List<AirDropFlightIndicator> availableIndicators = new List<AirDropFlightIndicator>();
+
+        for (int i = 0; i < flightIndicators.Count; i++)
+        {
+            if (flightIndicators[i].utility.indicatorState == AirDropFlightIndicatorUtility.IndicatorState.Backdrop)
+                availableIndicators.Add(flightIndicators[i]);
+        }
+
+
+        if (availableIndicators.Count > 0)
+        {
+            int indicatorID = Random.Range(0, availableIndicators.Count);
+            availableIndicators[indicatorID].utility.indicatorState = AirDropFlightIndicatorUtility.IndicatorState.AirDrop;
+            availableIndicators[indicatorID].utility.UpdateSpawnDefault(availableIndicators[indicatorID].transform);
+        }
+        else
+            return;
+    }
+
+    public void SpawnAirDrop(Transform _spawnPos)
+    {
+        int dropID = Random.Range(0, weaponDropPrefabs.Count);                                                              // Get a random dropID to spawn a specific type of weapon drop
+        RandomizeAirDropType(0, 3);                                                                                             // Determine air drop type
+        RandomizeAirDropFrequency(2, 10);
+
+        int holderIndex = (int)nextAirDropTypeToSpawn;
+
         for (int i = 0; i < maxAirDropClones; i++)
         {
-            if (!airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].gameObject.activeSelf)
+            if (!airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].gameObject.activeSelf)
             {
-                airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].transform.position = GetAirDropSpawnPosition();
-                airDropHolders[_index].utility.airDropSubHolder[_dropID].utility.airDrops[i].gameObject.SetActive(true);
+                airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].transform.position = _spawnPos.position + new Vector3(0, -1f, 0);
+                airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].gameObject.SetActive(true);
                 currentAirDrops++;
                 break;
             }
@@ -154,6 +190,15 @@ public class AirDropManagerUtility
 
         for (int i = 0; i < 3; i++)
             InitializeAirDropSubHolders(airDropHolders[i], i);
+
+
+        GenerateHolders();
+        InitializeHolders(_thisTransform);
+
+        InitializeRandIndicatorList();
+        InitializeFlyerList();
+
+        InitializeFlyers();
     }
 
     /// <summary>
@@ -350,6 +395,135 @@ public class AirDropManagerUtility
 
     #endregion
 
+    #endregion
+
+    #region Flight Manager Functions
+
+    public void FixedTick()
+    {
+        UpdateFlyers();
+    }
+
+    private void UpdateFlyers()
+    {
+        for (int i = 0; i < airDropFlyers.Count; i++)
+            airDropFlyers[i].utility.FixedTick(airDropFlyers[i].gameObject);
+    }
+
+    public IEnumerator ShowDebugs(GameObject _thisGameObject)
+    {
+        while (_thisGameObject.activeSelf == true)
+        {
+            yield return new WaitForSeconds(1);
+
+            if (debugMode)
+            {
+                for (int i = 0; i < flightIndicators.Count; i++)
+                {
+                    flightIndicators[i].GetComponent<Renderer>().enabled = true;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < flightIndicators.Count; i++)
+                {
+                    flightIndicators[i].GetComponent<Renderer>().enabled = false;
+                }
+            }
+
+        }
+    }
+
+    private void InitializeFlyers()
+    {
+        for (int i = 0; i < airDropFlyers.Count; i++)
+            airDropFlyers[i].utility.Initialize(airDropFlyers[i].gameObject, flightIndicators[i]);
+    }
+
+    private void InitializeFlyerList()
+    {
+        for (int i = 0; i < airDropFlyerCount; i++)
+        {
+            GameObject tempGO = GameObject.Instantiate(airDropFlyerPrefab.gameObject);
+            AirDropRandomFlyer retVal = tempGO.GetComponent<AirDropRandomFlyer>();
+
+            retVal.utility = new AirDropRandomFlyerUtility(Statics.AirDropFlyerName + " " + i);
+            retVal.transform.parent = flightHolder.transform;
+
+            retVal.transform.position = ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+
+            airDropFlyers.Add(retVal);
+        }
+    }
+
+    private void InitializeRandIndicatorList()
+    {
+        for (int i = 0; i < airDropFlyerCount; i++)
+        {
+            GameObject tempGO = GameObject.Instantiate(indicatorPrefab.gameObject);
+            AirDropFlightIndicator retVal = tempGO.GetComponent<AirDropFlightIndicator>();
+
+            retVal.utility = new AirDropFlightIndicatorUtility(Statics.IndicatorName + " " + i);
+            retVal.gameObject.name = retVal.utility.name;
+            retVal.transform.parent = indicatorHolder.transform;
+
+            retVal.transform.position = ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+
+            flightIndicators.Add(retVal);
+        }
+    }
+
+    private void InitializeHolders(Transform _managerTransform)
+    {
+        flightHolder.transform.parent = _managerTransform;
+        indicatorHolder.transform.parent = _managerTransform;
+    }
+
+    private void GenerateHolders()
+    {
+        flightHolder = new GameObject("Flight Holder");
+        indicatorHolder = new GameObject("Indicator Holder");
+    }
+
+    /// <summary>
+    /// Returns a random position inside a defined bounds, allows you to define the spawn height manually 
+    /// </summary>
+    /// <param name="_boundsCollider"></param>
+    /// <param name="_boundsBuffer"></param>
+    /// <param name="_ySpawnHeight"></param>
+    /// <returns></returns>
+    public Vector3 ReturnRandPosInBackdropBounds(Collider _boundsCollider, float _boundsBuffer, int _ySpawnHeight)
+    {
+        return new Vector3(Random.Range(_boundsCollider.bounds.min.x, _boundsCollider.bounds.max.x) * _boundsBuffer, _ySpawnHeight,
+                           Random.Range(_boundsCollider.bounds.min.z, _boundsCollider.bounds.max.z) * _boundsBuffer);
+    }
+
+    /// <summary>
+    /// Returns a random position inside a defined bounds
+    /// </summary>
+    /// <param name="_boundsCollider"></param>
+    /// <param name="_boundsBuffer"></param>
+    /// <param name="_ySpawnHeight"></param>
+    /// <returns></returns>
+    public Vector3 ReturnRandPosInBackdropBounds(Collider _boundsCollider, float _boundsBuffer)
+    {
+        return new Vector3(Random.Range(_boundsCollider.bounds.min.x, _boundsCollider.bounds.max.x),
+        Random.Range(_boundsCollider.bounds.min.y, _boundsCollider.bounds.max.y),
+        Random.Range(_boundsCollider.bounds.min.z, _boundsCollider.bounds.max.z));
+    }
+
+    /// <summary>
+    /// Returns a random position inside a defined bounds, allows you to define spawn height manually, defaults the z spawn location to the centre
+    /// </summary>
+    /// <param name="_boundsCollider"></param>
+    /// <param name="_boundsBuffer"></param>
+    /// <param name="_ySpawnHeight"></param>
+    /// <returns></returns>
+    public Vector3 ReturnRandPosInAirdropBounds(Collider _boundsCollider, float _boundsBuffer, int _ySpawnHeight)
+    {
+        return new Vector3(Random.Range(_boundsCollider.bounds.min.x, _boundsCollider.bounds.max.x) * _boundsBuffer, _ySpawnHeight,
+                           _boundsCollider.bounds.center.z);
+    }
     #endregion
 }
 

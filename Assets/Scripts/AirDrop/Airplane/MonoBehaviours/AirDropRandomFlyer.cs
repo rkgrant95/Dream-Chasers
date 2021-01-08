@@ -11,10 +11,10 @@ public class AirDropRandomFlyer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == utility.targetPosIndicator)
+        if (other.GetComponent<AirDropFlightIndicator>() == utility.targetPosIndicator)
         {
-            GameManager.Instance.AirDropManager.adfUtility.TestTargetPositionIndicator(utility.targetPosIndicator.transform);
-           // GameManager.Instance.AirDropManager.adfUtility.TestIndicatorSpawnAirDrop();
+            //utility.targetPosIndicator.transform.position = utility.targetPosIndicator.utility.ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+            utility.targetPosIndicator.utility.UpdateSpawnOnTrigger(utility.targetPosIndicator.transform);
         }
     }
 }
