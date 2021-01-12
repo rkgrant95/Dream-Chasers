@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class AirDropFlightIndicatorUtility
+public class CarePackageFlightIndicatorUtility
 {
     public enum IndicatorState { Backdrop, AirDrop, }
     public IndicatorState indicatorState;
 
     public string name;
-    public float cooldown;
 
-    public AirDropFlightIndicatorUtility(string _name)
+    public CarePackageFlightIndicatorUtility(string _name)
     {
         name = _name;
         indicatorState = IndicatorState.Backdrop;
-        cooldown = 0;
     }
 
     /// <summary>
@@ -27,10 +25,10 @@ public class AirDropFlightIndicatorUtility
         switch (indicatorState)
         {
             case IndicatorState.Backdrop:
-                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInBackdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInBackdropBounds(GameManager.Instance.AirDropManager.utility.backDropExtentsCollider, 0.75f, (int)Random.Range(15, 40));
                 break;
             case IndicatorState.AirDrop:
-                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.airDropZone, 0.75f, (int)Random.Range(15, 40));
+                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.utility.airDropExtentsCollider, 0.75f, (int)Random.Range(15, 40));
                 break;
             default:
                 break;
@@ -47,11 +45,11 @@ public class AirDropFlightIndicatorUtility
         switch (indicatorState)
         {
             case IndicatorState.Backdrop:
-                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInBackdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInBackdropBounds(GameManager.Instance.AirDropManager.utility.backDropExtentsCollider, 0.75f, (int)Random.Range(15, 40));
                 break;
             case IndicatorState.AirDrop:
                 GameManager.Instance.AirDropManager.utility.SpawnAirDrop(_thisTransform);
-                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.backdropZone, 0.75f, (int)Random.Range(15, 40));
+                _thisTransform.position = GameManager.Instance.AirDropManager.utility.ReturnRandPosInAirdropBounds(GameManager.Instance.AirDropManager.utility.backDropExtentsCollider, 0.75f, (int)Random.Range(15, 40));
                 indicatorState = IndicatorState.Backdrop;
                 break;
             default:

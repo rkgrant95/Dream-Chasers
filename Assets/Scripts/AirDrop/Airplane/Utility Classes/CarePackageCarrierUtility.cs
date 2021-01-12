@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class AirDropRandomFlyerUtility 
+public class CarePackageCarrierUtility 
 {
 
-    public enum FlyingState { RandomFlight, TransitionToAirDrop, Airdrop, }
+    public enum FlyingState { RandomFlight, Airdrop, }
     public FlyingState currentState;
 
     private string name;
@@ -44,21 +44,21 @@ public class AirDropRandomFlyerUtility
     private Rigidbody body;
 
     [System.NonSerialized]
-    public float changeTarget = 0f, changeAnim = 0f, timeSinceTarget = 0f, timeSinceAnim = 0f, prevAnim, currentAnim = 0f, prevSpeed, speed, zturn, prevz, turnSpeedBackup;
+    public float changeAnim = 0f, timeSinceAnim = 0f, prevAnim, currentAnim = 0f, prevSpeed, speed, zturn, prevz, turnSpeedBackup;
     public Vector3 rotateTarget, position, direction, velocity, randomizedBase;
     private Quaternion lookRotation;
     [System.NonSerialized] 
-    public float distanceFromBase, distanceFromTarget;
+    public float distanceFromBase;
 
-    public AirDropFlightIndicator targetPosIndicator;
-
-    public AirDropRandomFlyerUtility(string _name)
+    public CarePackageFlightIndicator targetPosIndicator;
+    public bool changeFlightOnTimer;
+    public CarePackageCarrierUtility(string _name)
     {
         name = _name;
         currentState = FlyingState.RandomFlight;
 
         idleSpeed = 10;
-        turnSpeed = 75;
+        turnSpeed = 100;
         switchSeconds = 3;
         idleRatio = 0.3f;
 
@@ -85,7 +85,7 @@ public class AirDropRandomFlyerUtility
 
     }
 
-    public AirDropRandomFlyerUtility(AirDropRandomFlyerUtility _cloneUtility)
+    public CarePackageCarrierUtility(CarePackageCarrierUtility _cloneUtility)
     {
         name = _cloneUtility.name;
 
@@ -110,6 +110,10 @@ public class AirDropRandomFlyerUtility
         flyingTarget = _cloneUtility.flyingTarget;
     }
 
+    /// <summary>
+    /// Fixed update for this game object
+    /// </summary>
+    /// <param name="_thisGameObject"></param>
     public void FixedTick(GameObject _thisGameObject)
     {
         // Wait if start should be delayed (useful to add small differences in large flocks)
@@ -121,10 +125,6 @@ public class AirDropRandomFlyerUtility
 
         // Calculate distances
         distanceFromBase = Vector3.Magnitude(randomizedBase - body.position);
-        //distanceFromTarget = Vector3.Magnitude(flyingTarget.position - body.position);
-
-
-        distanceFromTarget = Vector3.Magnitude(targetPosIndicator.transform.position - body.position);
 
         AllowDrasticTurns();
 
@@ -143,12 +143,17 @@ public class AirDropRandomFlyerUtility
 
     }
 
-    public void Initialize(GameObject _thisGameObject, AirDropFlightIndicator _targetPosIndicator)
+    /// <summary>
+    /// Initialize this game object
+    /// </summary>
+    /// <param name="_thisGameObject"></param>
+    /// <param name="_targetPosIndicator"></param>
+    public void Initialize(GameObject _thisGameObject, CarePackageFlightIndicator _targetPosIndicator)
     {
         // Inititalize
         _thisGameObject.name = name;
 
-        animator = _thisGameObject.GetComponent<Animator>();
+        animator = _thisGameObject.GetComponentInChildren<Animator>();
         body = _thisGameObject.GetComponent<Rigidbody>();
 
         targetPosIndicator = _targetPosIndicator;
@@ -160,17 +165,22 @@ public class AirDropRandomFlyerUtility
 
         if (delayStart < 0f) 
             body.velocity = idleSpeed * direction;
+
+        changeAnim = 10;
     }
 
+    /// <summary>
+    /// Doubles the turn speed of the flyer in cases where they may exceed bounds if their turn speed is too slow
+    /// </summary>
     private void AllowDrasticTurns()
     {
         // Allow drastic turns close to base to ensure target can be reached
         if (returnToBase && distanceFromBase < 10f)
         {
-            if (turnSpeed != 150f && body.velocity.magnitude != 0f)
+            if (turnSpeed != 200f && body.velocity.magnitude != 0f)
             {
                 turnSpeedBackup = turnSpeed;
-                turnSpeed = 150f;
+                turnSpeed = 200f;
             }
             else if (distanceFromBase <= 2f)
             {
@@ -183,36 +193,36 @@ public class AirDropRandomFlyerUtility
 
     private void UpdateAnimationSpeed()
     {
-        // Time for a new animation speed
-        if (changeAnim < 0f)
-        {
-            prevAnim = currentAnim;
-            currentAnim = ChangeAnim(currentAnim);
-            changeAnim = Random.Range(changeAnimEveryFromTo.x, changeAnimEveryFromTo.y);
-            timeSinceAnim = 0f;
-            prevSpeed = speed;
+        prevSpeed = speed;
+        speed = idleSpeed;
 
-            if (currentAnim == 0)
-                speed = idleSpeed;
+        if (changeAnim < 0)
+        {
+            int rand = Random.Range(0, 5);
+            bool reverse = Random.value > 0.5f;
+
+            animator.SetBool(Statics.ReverseAnim, reverse);
+
+            if (rand < 1)
+                animator.SetTrigger(Statics.BarrelRollAnim);
             else
-                speed = Mathf.Lerp(moveSpeedMinMax.x, moveSpeedMinMax.y, (currentAnim - animSpeedMinMax.x) / (animSpeedMinMax.y - animSpeedMinMax.x));
+                animator.SetTrigger(Statics.TurbulenceAnim);
+
+            changeAnim = 5;
         }
     }
 
+    /// <summary>
+    /// Updates the flyer target
+    /// </summary>
     private void UpdateFlyTarget()
     {
-        // Time for a new target position
-        if (changeTarget < 0f)
-        {
-            rotateTarget = ChangeDirection(body.transform.position);
+        rotateTarget = ChangeDirection(body.transform.position);
 
-            if (returnToBase)
-                changeTarget = 0.2f;
-            else
-                changeTarget = Random.Range(changeTargetEveryFromTo.x, changeTargetEveryFromTo.y);
+        /*
+        if (returnToBase)
 
-            timeSinceTarget = 0f;
-        }
+        */
     }
 
     private void AdjustFlightHeight()
@@ -236,11 +246,12 @@ public class AirDropRandomFlyerUtility
     {
         // Update times
         changeAnim -= Time.fixedDeltaTime;
-        changeTarget -= Time.fixedDeltaTime;
-        timeSinceTarget += Time.fixedDeltaTime;
         timeSinceAnim += Time.fixedDeltaTime;
     }
 
+    /// <summary>
+    /// Updates the flyer rotation 
+    /// </summary>
     private void UpdateRotation()
     {
         // Rotate towards target
@@ -265,10 +276,15 @@ public class AirDropRandomFlyerUtility
         body.transform.Rotate(0f, 0f, prevz - temp, Space.Self);
     }
 
+    /// <summary>
+    /// Updates flyer movement velocity with speed & direction
+    /// </summary>
+    /// <param name="_thisGameObject"></param>
     private void UpdateFlyerMovement(GameObject _thisGameObject)
     {
         // Move flyer
         direction = Quaternion.Euler(_thisGameObject.transform.eulerAngles) * Vector3.forward;
+
         if (returnToBase && distanceFromBase < idleSpeed)
             body.velocity = Mathf.Min(idleSpeed, distanceFromBase) * direction;
         else
@@ -282,24 +298,12 @@ public class AirDropRandomFlyerUtility
             body.transform.position = position;
         }
     }
-    // Select a new animation speed randomly
-    private float ChangeAnim(float _currentAnim)
-    {
-        float newState;
-        if (Random.Range(0f, 1f) < idleRatio) newState = 0f;
-        else
-        {
-            newState = Random.Range(animSpeedMinMax.x, animSpeedMinMax.y);
-        }
-        if (newState != _currentAnim)
-        {
-            animator.SetFloat("flySpeed", newState);
-            if (newState == 0) animator.speed = 1f; else animator.speed = newState;
-        }
-        return newState;
-    }
 
-    // Select a new direction to fly in randomly
+    /// <summary>
+    /// Returns a new direction for the flyer to travel in 
+    /// </summary>
+    /// <param name="_currentPosition"></param>
+    /// <returns></returns>
     private Vector3 ChangeDirection(Vector3 _currentPosition)
     {
         Vector3 newDir = Vector3.zero;
@@ -307,9 +311,6 @@ public class AirDropRandomFlyerUtility
         switch (currentState)
         {
             case FlyingState.RandomFlight:
-                newDir = targetPosIndicator.transform.position - _currentPosition;
-                break;
-            case FlyingState.TransitionToAirDrop:
                 newDir = targetPosIndicator.transform.position - _currentPosition;
                 break;
             case FlyingState.Airdrop:

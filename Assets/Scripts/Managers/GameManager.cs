@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
 													//can make enemies chase something that isn't the player (as is the case with allies)
 
 	[Header("Air Drop Properties")]
-	public AirDropManager AirDropManager;            
+	public CarePackageManager AirDropManager;            
 
 	[SerializeField] float delayOnPlayerDeath = 1f;	//How long to wait once the player has been defeated
 

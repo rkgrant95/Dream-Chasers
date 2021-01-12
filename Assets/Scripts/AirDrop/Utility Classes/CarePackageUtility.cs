@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum AirDropType { Weapon, Equipment, Tactical }
+public enum CarePackageType { Weapon, Equipment, Tactical }
 
 [System.Serializable]
-public class AirDropUtility 
+public class CarePackageUtility 
 {
     #region Air Drop ID
     [Header("Air Drop Identification")]
 
     [Tooltip("The type of air drop that will be received")]
-    public AirDropType airDropType;
+    public CarePackageType airDropType;
 
     [Tooltip ("The Drop ID, will be used to tell the weapon system what weapon to switch to or effect to bestow")]
     public int dropId;
@@ -29,7 +29,7 @@ public class AirDropUtility
     #endregion
 
 
-    public AirDropUtility(AirDropUtility _airDropUtility)
+    public CarePackageUtility(CarePackageUtility _airDropUtility)
     {
         useRandomActiveTime = _airDropUtility.useRandomActiveTime;
         airDropType = _airDropUtility.airDropType;
@@ -37,12 +37,29 @@ public class AirDropUtility
         activeTime = _airDropUtility.activeTime;
     }
 
-    public void AirDropCollected(AirDrop _airDrop)
+    public int AirDropCollected(CarePackage _carePackage)
     {
         GameManager.Instance.AirDropManager.utility.currentAirDrops--;
-        _airDrop.gameObject.SetActive(false);
+        _carePackage.gameObject.SetActive(false);
+        return dropId;
     }
 
+    public void TriggerEnter(CarePackage _carePackage)
+    {
+        switch (_carePackage.utility.airDropType)
+        {
+            case CarePackageType.Weapon:
+                GameManager.Instance.Player.GetComponentInChildren<WeaponSystem>().SetActiveWeapon(_carePackage.utility.AirDropCollected(_carePackage));
+                break;
+            case CarePackageType.Equipment:
+                break;
+            case CarePackageType.Tactical:
+                break;
+            default:
+                break;
+        }
+
+    }
 }
 
 

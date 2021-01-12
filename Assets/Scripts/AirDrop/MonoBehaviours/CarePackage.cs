@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AirDrop : MonoBehaviour
+public class CarePackage : MonoBehaviour
 {
-    public AirDropUtility utility;
+    public CarePackageUtility utility;
 
   
 }

@@ -4,17 +4,17 @@ using UnityEngine;
 
 
 [System.Serializable]
-public class AirDropHolderUtility
+public class CarePackageHolderUtility
 {
     public string name;
-    public List<AirDropSubHolder> airDropSubHolder = new List<AirDropSubHolder>();
+    public List<CarePackageSubHolder> airDropSubHolder = new List<CarePackageSubHolder>();
 
     /// <summary>
     /// Initialize Air Drop Holder Utility
     /// </summary>
     /// <param name="_name"></param>
     /// <param name="_thisTransform"></param>
-    public AirDropHolderUtility(string _name)
+    public CarePackageHolderUtility(string _name)
     {
         name = _name;                                                                                                // Set the air drop holder name in air drop holder class
     }
@@ -24,7 +24,7 @@ public class AirDropHolderUtility
     /// Override an air drop holder utlity with another air diop holder utility
     /// </summary>
     /// <param name="_refAirDropHolderUtility"></param>
-    public AirDropHolderUtility(AirDropHolderUtility _refAirDropHolderUtility)
+    public CarePackageHolderUtility(CarePackageHolderUtility _refAirDropHolderUtility)
     {
         name = _refAirDropHolderUtility.name;
         airDropSubHolder = _refAirDropHolderUtility.airDropSubHolder;

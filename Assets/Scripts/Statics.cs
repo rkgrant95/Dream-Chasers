@@ -18,7 +18,6 @@ public static class Statics
     // Path for weapon drop prefabs in the asset folder. Need to add oweapon drop index & .prefab for the path to be valid
     public static string WeaponDropPath = "Assets/Prefabs/Air Drop Prefabs/Weapon Air Drop Prefabs/Weapon Air Drop ";
     public static string WeaponDropFolderPath = "Assets/Prefabs/Air Drop Prefabs/Weapon Air Drop Prefabs";
-
     #endregion
 
     #region Equipment ID's
@@ -31,6 +30,16 @@ public static class Statics
     // Path for weapon drop prefabs in the asset folder. Need to add oweapon drop index & .prefab for the path to be valid
     public static string TacticalDropPath = "Assets/Prefabs/Air Drop Prefabs/Tactical Air Drop Prefabs/Tactical Air Drop ";
     public static string TacticalDropFolderPath = "Assets/Prefabs/Air Drop Prefabs/Tactical Air Drop Prefabs";
+    #endregion
+
+    #region Airplane ID's
+    public static string AirPlanePath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Plane Prefabs/Air Drop Plane Prefab.prefab";
+    public static string AirPlaneFolderPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Plane Prefabs";
+    #endregion
+
+    #region Airplane Indicator ID's
+    public static string AirPlaneIndicatorPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Indicator Prefabs/Air Drop Indicator Prefab.prefab";
+    public static string AirPlaneIndicatorFolderPath = "Assets/Prefabs/Air Drop Prefabs/Air Drop Indicator Prefabs";
     #endregion
 
     #region Sub-Holder Names
@@ -65,7 +74,14 @@ public static class Statics
 
     #endregion
 
+    #region Animation Variables
 
+    #region Plane Animation Variables
+    public static string BarrelRollAnim = "Barrel Roll";
+    public static string TurbulenceAnim = "Turbulence";
+    public static string ReverseAnim = "Reverse";
+    #endregion
+    #endregion
 
 
     #region Utility Functions

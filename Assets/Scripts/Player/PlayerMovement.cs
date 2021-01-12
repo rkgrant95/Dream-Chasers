@@ -12,7 +12,8 @@ public class PlayerMovement : MonoBehaviour
 	[SerializeField] Animator animator;									//Reference to the animator component
 	[SerializeField] Rigidbody rigidBody;								//Reference to the rigidbody component
 
-	bool canMove = true;												//Can the player move?
+	bool canMove = true;                                                //Can the player move?
+	private CarePackage airDrop;
 
 	//Reset() defines the default values for properties in the inspector
 	void Reset ()
@@ -24,11 +25,13 @@ public class PlayerMovement : MonoBehaviour
 
 	private void OnTriggerEnter(Collider _other)
     {
-        if (_other.GetComponent<AirDrop>())
+        if (_other.GetComponent<CarePackage>())
         {
-			_other.GetComponent<AirDrop>().utility.AirDropCollected(_other.GetComponent<AirDrop>());
+			airDrop = _other.GetComponent<CarePackage>();
+			airDrop.utility.TriggerEnter(airDrop);
+			airDrop = null;
 		}
-    }
+	}
 
 	//Move with physics so the movement code goes in FixedUpdate()
 	void FixedUpdate ()
