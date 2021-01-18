@@ -4,6 +4,8 @@ using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
+public enum CarePackageCarrierState { Backdrop, AirDrop, Attack }
+
 [System.Serializable]
 public class CarePackageManagerUtility
 {
@@ -167,7 +169,7 @@ public class CarePackageManagerUtility
 
         for (int i = 0; i < flightIndicators.Count; i++)
         {
-            if (flightIndicators[i].utility.indicatorState == CarePackageFlightIndicatorUtility.IndicatorState.Backdrop)
+            if (flightIndicators[i].utility.indicatorState == CarePackageCarrierState.Backdrop)
                 availableIndicators.Add(flightIndicators[i]);
         }
 
@@ -176,7 +178,7 @@ public class CarePackageManagerUtility
         {
             int indicatorID = Random.Range(0, availableIndicators.Count);
 
-            availableIndicators[indicatorID].utility.indicatorState = CarePackageFlightIndicatorUtility.IndicatorState.AirDrop;
+            availableIndicators[indicatorID].utility.indicatorState = CarePackageCarrierState.AirDrop;
             availableIndicators[indicatorID].utility.UpdateSpawnDefault(availableIndicators[indicatorID].transform);
         }
         else
