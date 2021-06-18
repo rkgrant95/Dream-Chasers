@@ -81,8 +81,13 @@ public static class Statics
     public static string TurbulenceAnim = "Turbulence";
     public static string ReverseAnim = "Reverse";
     #endregion
-    #endregion
 
+    #region Character Animation Variables
+    public static string characterWalk = "Move";
+    public static string characterJump = "Jump";
+    public static string animForceTransition = "ForceTransition";
+    #endregion
+    #endregion
 
     #region Utility Functions
 

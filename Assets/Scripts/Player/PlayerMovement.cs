@@ -28,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
         if (_other.GetComponent<CarePackage>())
         {
 			airDrop = _other.GetComponent<CarePackage>();
-			airDrop.utility.TriggerEnter(airDrop);
+			airDrop.TriggerEnter();
 			airDrop = null;
 		}
 	}

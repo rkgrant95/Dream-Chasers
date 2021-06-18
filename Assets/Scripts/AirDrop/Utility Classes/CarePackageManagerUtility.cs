@@ -20,7 +20,7 @@ public class CarePackageManagerUtility
     [Tooltip("Air drop list prefab")]
     [SerializeField]    
     //[HideInInspector]
-    private GameObject airDropSubHolderPrefab;
+    private GameObject cpSubHolderPrefab;
 
     [Tooltip("Holder to hold child airplanes")]
     [SerializeField]    
@@ -62,7 +62,7 @@ public class CarePackageManagerUtility
 
     #region Child List References
     [Header ("Child List Properties")]
-    public List<CarePackageHolder> airDropHolders;
+    public List<CarePackageHolder> cpHolders;
     public List<CarePackageCarrier> airDropFlyers;
     public List<CarePackageFlightIndicator> flightIndicators;
     public List<CarePackageFlightIndicator> availableIndicators;
@@ -191,10 +191,10 @@ public class CarePackageManagerUtility
 
         for (int i = 0; i < maxAirDropClones; i++)
         {
-            if (!airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].gameObject.activeSelf)
+            if (!cpHolders[holderIndex].cpSubHolders[dropID].carePackages[i].gameObject.activeSelf)
             {
-                airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].transform.position = _spawnPos.position + new Vector3(0, -1f, 0);
-                airDropHolders[holderIndex].utility.airDropSubHolder[dropID].utility.airDrops[i].gameObject.SetActive(true);
+                cpHolders[holderIndex].cpSubHolders[dropID].carePackages[i].transform.position = _spawnPos.position + new Vector3(0, -1f, 0);
+                cpHolders[holderIndex].cpSubHolders[dropID].carePackages[i].gameObject.SetActive(true);
                 currentAirDrops++;
                 break;
             }
@@ -217,7 +217,7 @@ public class CarePackageManagerUtility
         InitializeAirDropManager(_thisTransform);
 
         for (int i = 0; i < 3; i++)
-            InitializeAirDropSubHolders(airDropHolders[i], i);
+            InitializeAirDropSubHolders(cpHolders[i], i);
 
 
         GenerateHolders();
@@ -236,9 +236,9 @@ public class CarePackageManagerUtility
     private void InitializeAirDropManager(Transform _parentTransform)
     {
         CarePackageHolder adHolder = airDropHolderPrefab.GetComponent<CarePackageHolder>();
-        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.WeaponDropHolderName, _parentTransform));
-        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.EquipmentDropHolderName, _parentTransform));
-        airDropHolders.Add(GenereateNewAirDropholder(adHolder, Statics.TacticalDropHolderName, _parentTransform));
+        cpHolders.Add(GenereateNewAirDropholder(adHolder, Statics.WeaponDropHolderName, _parentTransform));
+        cpHolders.Add(GenereateNewAirDropholder(adHolder, Statics.EquipmentDropHolderName, _parentTransform));
+        cpHolders.Add(GenereateNewAirDropholder(adHolder, Statics.TacticalDropHolderName, _parentTransform));
 
     }
 
@@ -248,29 +248,29 @@ public class CarePackageManagerUtility
     /// </summary>
     /// <param name="_airDropList"></param>
     /// <param name="_enumIndex"></param>
-    private void InitializeAirDropSubHolders(CarePackageHolder _airDropHolder, int _enumIndex)
+    private void InitializeAirDropSubHolders(CarePackageHolder _cpHolder, int _enumIndex)
     {
         switch ((CarePackageType)_enumIndex)
         {
             case CarePackageType.Weapon:
                 for (int i = 0; i < weaponDropPrefabs.Count; i++)
                 {
-                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.WeaponDropSubHolderName + i, _airDropHolder.transform));
-                    InitializeAirDropSubHolder(_airDropHolder, i, weaponDropPrefabs);
+                    _cpHolder.cpSubHolders.Add(GenerateNewAirDropSubHolder(cpSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.WeaponDropSubHolderName + i, _cpHolder.transform));
+                    InitializeCarePackageSubHolder(_cpHolder, i, weaponDropPrefabs);
                 }
                 break;
             case CarePackageType.Equipment:
                 for (int i = 0; i < equipmentDropPrefabs.Count; i++)
                 {
-                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.EquipmentDropSubHolderName + i, _airDropHolder.transform));
-                    InitializeAirDropSubHolder(_airDropHolder, i, equipmentDropPrefabs);
+                    _cpHolder.cpSubHolders.Add(GenerateNewAirDropSubHolder(cpSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.EquipmentDropSubHolderName + i, _cpHolder.transform));
+                    InitializeCarePackageSubHolder(_cpHolder, i, equipmentDropPrefabs);
                 }
                 break;
             case CarePackageType.Tactical:
                 for (int i = 0; i < tacticalDropPrefabs.Count; i++)
                 {
-                    _airDropHolder.utility.airDropSubHolder.Add(GenerateNewAirDropSubHolder(airDropSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.TacticalDropSubHolderName + i, _airDropHolder.transform));
-                    InitializeAirDropSubHolder(_airDropHolder, i, tacticalDropPrefabs);
+                    _cpHolder.cpSubHolders.Add(GenerateNewAirDropSubHolder(cpSubHolderPrefab.GetComponent<CarePackageSubHolder>(), Statics.TacticalDropSubHolderName + i, _cpHolder.transform));
+                    InitializeCarePackageSubHolder(_cpHolder, i, tacticalDropPrefabs);
                 }
                 break;
             default:
@@ -278,7 +278,7 @@ public class CarePackageManagerUtility
         }
     }
 
-    private void InitializeAirDropSubHolder(CarePackageHolder _airDropHolder, int _index, List<GameObject> _airDropPrefabs)
+    private void InitializeCarePackageSubHolder(CarePackageHolder _cpHolder, int _index, List<GameObject> _airDropPrefabs)
     {
         int rand = 0;
 
@@ -287,15 +287,15 @@ public class CarePackageManagerUtility
 
         for (int j = 0; j < maxAirDropClones; j++)
         {
-            _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops.Add(GenereateNewAirDrop(_airDropPrefabs[_index].GetComponent<CarePackage>(), _airDropHolder.utility.airDropSubHolder[_index].transform));         // Add the new air drop to the air drop list
-            _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.dropId = _index;                                                               // Set the weapon drop active time to a random value
+            _cpHolder.cpSubHolders[_index].carePackages.Add(GenereateNewAirDrop(_airDropPrefabs[_index].GetComponent<CarePackage>(), _cpHolder.cpSubHolders[_index].transform));         // Add the new air drop to the air drop list
+            _cpHolder.cpSubHolders[_index].carePackages[j].dropId = _index;                                                               // Set the weapon drop active time to a random value
 
             if (overrideAirDropActiveTime)                                                                                              // If we want to override the prefab active time to the air drop manager preset
             {
                 if (useRandomActiveTime)                                                                                                // If we want to use a random value
-                    _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.activeTime = rand;                                                                  // Set the weapon drop active time to a random value
+                    _cpHolder.cpSubHolders[_index].carePackages[j].activeTime = rand;                                                                  // Set the weapon drop active time to a random value
                 else
-                    _airDropHolder.utility.airDropSubHolder[_index].utility.airDrops[j].utility.activeTime = airDropActiveTime;                                                                      // Else use the preset active time value
+                    _cpHolder.cpSubHolders[_index].carePackages[j].activeTime = airDropActiveTime;                                                                      // Else use the preset active time value
             }
         }
     }
@@ -333,7 +333,7 @@ public class CarePackageManagerUtility
                 break;
             default:
                 airDropHolderPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirDropHolderPath, typeof(GameObject));
-                airDropSubHolderPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirDropListPath, typeof(GameObject));
+                cpSubHolderPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirDropListPath, typeof(GameObject));
 
                 airDropFlyerPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirPlanePath, typeof(GameObject));
                 indicatorPrefab = (GameObject)AssetDatabase.LoadAssetAtPath(Statics.AirPlaneIndicatorPath, typeof(GameObject));
@@ -370,8 +370,8 @@ public class CarePackageManagerUtility
         GameObject tempGO = GameObject.Instantiate(_refAirDropList.gameObject);
         CarePackageSubHolder retVal = tempGO.GetComponent<CarePackageSubHolder>();
 
-        retVal.utility = new CarePackageSubHolderUtility(_airDropListName);
-        retVal.gameObject.name = retVal.utility.name;
+        //retVal = new CarePackageSubHolder(_airDropListName);
+        retVal.gameObject.name = retVal.name;
         retVal.transform.parent = _parentTransform;
 
         return retVal;
@@ -382,8 +382,8 @@ public class CarePackageManagerUtility
         GameObject tempGO = GameObject.Instantiate(_refAirDropHolder.gameObject);
         CarePackageHolder retVal = tempGO.GetComponent<CarePackageHolder>();
 
-        retVal.utility = new CarePackageHolderUtility(_airDropHolderName);
-        retVal.gameObject.name = retVal.utility.name;
+        //retVal = new CarePackageHolder(_airDropHolderName);
+        retVal.gameObject.name = retVal.name;
         retVal.transform.parent = _parentTransform;
 
         return retVal;
@@ -393,8 +393,6 @@ public class CarePackageManagerUtility
     {
         GameObject tempGO = GameObject.Instantiate(_refAirDrop.gameObject);
         CarePackage retVal = tempGO.GetComponent<CarePackage>();
-        retVal.utility = new CarePackageUtility(_refAirDrop.utility);
-
         retVal.transform.parent = _parentTransform;
         retVal.gameObject.SetActive(false);
 

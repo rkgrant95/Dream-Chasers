@@ -5,7 +5,7 @@ using UnityEngine;
 public enum CarePackageType { Weapon, Equipment, Tactical }
 
 [System.Serializable]
-public class CarePackageUtility 
+public class CarePackageUtility : MonoBehaviour
 {
     #region Air Drop ID
     [Header("Air Drop Identification")]
@@ -28,28 +28,52 @@ public class CarePackageUtility
     public bool useRandomActiveTime;
     #endregion
 
+    public CarePackageUtility()
+    {
+
+    }
 
     public CarePackageUtility(CarePackageUtility _airDropUtility)
     {
-        useRandomActiveTime = _airDropUtility.useRandomActiveTime;
-        airDropType = _airDropUtility.airDropType;
         dropId = _airDropUtility.dropId;
         activeTime = _airDropUtility.activeTime;
+        airDropType = _airDropUtility.airDropType;
+        useRandomActiveTime = _airDropUtility.useRandomActiveTime;
     }
 
-    public int AirDropCollected(CarePackage _carePackage)
+    protected virtual void Awake()
     {
-        GameManager.Instance.AirDropManager.utility.currentAirDrops--;
-        _carePackage.gameObject.SetActive(false);
+
+    }
+
+    protected virtual void Start()
+    {
+
+    }
+
+    public virtual int AirDropCollected()
+    {
+        StartCoroutine(DespawnAirDrop(0));
         return dropId;
     }
 
-    public void TriggerEnter(CarePackage _carePackage)
+    protected virtual IEnumerator DespawnAirDrop(float _delay)
     {
-        switch (_carePackage.utility.airDropType)
+        yield return new WaitForSeconds(_delay);
+
+        if (gameObject.activeSelf)
+        {
+            GameManager.Instance.AirDropManager.utility.currentAirDrops--;
+            gameObject.SetActive(false);
+        }
+    }
+
+    public virtual void TriggerEnter()
+    {
+        switch (airDropType)
         {
             case CarePackageType.Weapon:
-                GameManager.Instance.Player.GetComponentInChildren<WeaponSystem>().SetActiveWeapon(_carePackage.utility.AirDropCollected(_carePackage));
+                GameManager.Instance.Player.GetComponentInChildren<WeaponSystem>().SetActiveWeapon(AirDropCollected());
                 break;
             case CarePackageType.Equipment:
                 break;
