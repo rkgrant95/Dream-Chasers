@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 [System.Serializable]
 public class CarePackageCarrierUtility 
 {
-    public CarePackageCarrierState currentState;
+
+    public enum FlyingState { RandomFlight, Airdrop, }
+    public FlyingState currentState;
 
     private string name;
 
@@ -43,8 +44,8 @@ public class CarePackageCarrierUtility
     private Rigidbody body;
 
     [System.NonSerialized]
-    public float changeAnim = 0f, timeSinceAnim = 0f, prevSpeed, speed, zturn, prevz, turnSpeedBackup;
-    public Vector3 rotateTarget, position, direction, randomizedBase;
+    public float changeAnim = 0f, timeSinceAnim = 0f, prevAnim, currentAnim = 0f, prevSpeed, speed, zturn, prevz, turnSpeedBackup;
+    public Vector3 rotateTarget, position, direction, velocity, randomizedBase;
     private Quaternion lookRotation;
     [System.NonSerialized] 
     public float distanceFromBase;
@@ -54,7 +55,7 @@ public class CarePackageCarrierUtility
     public CarePackageCarrierUtility(string _name)
     {
         name = _name;
-        currentState = CarePackageCarrierState.Backdrop;
+        currentState = FlyingState.RandomFlight;
 
         idleSpeed = 10;
         turnSpeed = 100;
@@ -307,17 +308,12 @@ public class CarePackageCarrierUtility
     {
         Vector3 newDir = Vector3.zero;
 
-        currentState = targetPosIndicator.utility.indicatorState;
-
         switch (currentState)
         {
-            case CarePackageCarrierState.Backdrop:
+            case FlyingState.RandomFlight:
                 newDir = targetPosIndicator.transform.position - _currentPosition;
                 break;
-            case CarePackageCarrierState.AirDrop:
-                newDir = targetPosIndicator.transform.position - _currentPosition;
-                break;
-            case CarePackageCarrierState.Attack:
+            case FlyingState.Airdrop:
                 newDir = targetPosIndicator.transform.position - _currentPosition;
                 break;
             default:
